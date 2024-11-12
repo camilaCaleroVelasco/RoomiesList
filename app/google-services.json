@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "931522093543",
+    "firebase_url": "https://roomieslist-cfb48-default-rtdb.firebaseio.com",
+    "project_id": "roomieslist-cfb48",
+    "storage_bucket": "roomieslist-cfb48.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:931522093543:android:f0652336f942293af19d42",
+        "android_client_info": {
+          "package_name": "edu.uga.cs.roomieslist"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4dvpXXkuYshPm-pWaM8hRz3SotYgE2n0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
