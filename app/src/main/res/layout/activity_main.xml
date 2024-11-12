@@ -1,45 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:padding="16dp"
     tools:context=".MainActivity">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
+    <!-- App Title -->
+    <TextView
+        android:id="@+id/appTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="20dp"
+        android:text="RoomiesList"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
-        <!-- Button to go to Login Page -->
-        <Button
-            android:id="@+id/goToLoginButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Go to Login"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="16dp" />
+    <!-- Login Button -->
+    <Button
+        android:id="@+id/loginButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:layout_gravity="center_horizontal"
+        android:padding="10dp" />
 
-        <!-- RecyclerView for displaying shopping list items -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/shoppingListRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/goToLoginButton"
-            android:layout_marginTop="16dp" />
-
-        <!-- Button to add a new shopping item -->
-        <Button
-            android:id="@+id/addItemButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add Item"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="16dp" />
-
-    </RelativeLayout>
+    <!-- Sign Up Link -->
+    <TextView
+        android:id="@+id/signUpLink"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Don't have an account? Sign Up"
+        android:textColor="@android:color/holo_blue_dark"
+        android:layout_gravity="center_horizontal"
+        android:paddingTop="10dp"
+        android:clickable="true" />
 </LinearLayout>

@@ -3,6 +3,7 @@ package edu.uga.cs.roomieslist;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,8 +16,8 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity {
 
-    private FirebaseAuth mAuth;
-    private Button goToLoginButton;
+    private Button loginButton;
+    private TextView signUpLink;    private Button goToLoginButton;
 
 
     @Override
@@ -30,22 +31,18 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        loginButton = findViewById(R.id.loginButton);
+        signUpLink = findViewById(R.id.signUpLink);
 
-        mAuth = FirebaseAuth.getInstance();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-
-        // Initialize button and set click listener
-        goToLoginButton = findViewById(R.id.goToLoginButton);
-        goToLoginButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(intent);
+        // Navigate to Login page
+        loginButton.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
         });
 
-        // Check if user is logged in
-        if (currentUser == null) {
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-            finish();
-        }
+        // Navigate to Sign-Up page
+        signUpLink.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, SignupActivity.class));
+        });
 
     }
 }

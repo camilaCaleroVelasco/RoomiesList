@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -17,7 +18,8 @@ import com.google.firebase.auth.FirebaseAuth;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText emailEditText, passwordEditText;
-    private Button loginButton, registerButton;
+    private Button loginButton;
+    private TextView signUpLink;
     private FirebaseAuth mAuth;
 
     @Override
@@ -32,11 +34,14 @@ public class LoginActivity extends AppCompatActivity {
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         loginButton = findViewById(R.id.loginButton);
-        registerButton = findViewById(R.id.registerButton);
+        signUpLink = findViewById(R.id.signUpLink);
 
         // Set listeners
         loginButton.setOnClickListener(v -> loginUser());
-        registerButton.setOnClickListener(v -> registerUser());
+        // Navigate to Sign-Up page
+        signUpLink.setOnClickListener(v -> {
+            startActivity(new Intent(LoginActivity.this, SignupActivity.class));
+        });
     }
 
     private void loginUser() {
