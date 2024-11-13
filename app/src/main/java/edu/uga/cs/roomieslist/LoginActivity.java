@@ -57,8 +57,7 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         // Login success
-                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                        finish();
+                        navigateToShoppingList();
                     } else {
                         // Login failed
                         Toast.makeText(LoginActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
@@ -66,24 +65,12 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    private void registerUser() {
-        String email = emailEditText.getText().toString().trim();
-        String password = passwordEditText.getText().toString().trim();
-
-        if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        // Registration success
-                        Toast.makeText(LoginActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        // Registration failed
-                        Toast.makeText(LoginActivity.this, "Registration failed.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+    private void navigateToShoppingList() {
+        Intent intent = new Intent(LoginActivity.this, ShoppingListActivity.class);
+        // Optional: pass Group ID or other data if needed
+        String groupId = "userGroupId"; // Replace with actual group ID logic
+        intent.putExtra("GROUP_ID", groupId);
+        startActivity(intent);
+        finish(); // Close LoginActivity
     }
 }

@@ -50,6 +50,7 @@ public class SignupActivity extends AppCompatActivity {
         });
     }
 
+    // Handle user registration
     private void registerUser() {
         String name = nameEditText.getText().toString().trim();
         String email = emailEditText.getText().toString().trim();
