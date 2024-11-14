@@ -13,7 +13,4 @@ public class User {
         this.groupId = groupId;
     }
 
-    public String getName() {
-        return name;
-    }
 }
