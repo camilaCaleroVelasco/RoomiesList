@@ -13,16 +13,6 @@ public class Item {
 
     }
 
-//    public Item(String itemId, String name){
-//        this.itemId = itemId;
-//        this.name = name;
-//        this.purchased = false;
-//        this.price = 0.0;
-//        this.purchasedBy = "";
-//        this.isSelected = false;
-//        this.addedBy = "";
-//    }
-
     public Item(String itemId, String name, double price, String purchasedBy, String addedBy) {
         this.itemId = itemId;
         this.name = name;

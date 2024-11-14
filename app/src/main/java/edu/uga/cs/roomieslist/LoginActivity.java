@@ -36,7 +36,7 @@ public class LoginActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.loginButton);
         signUpLink = findViewById(R.id.signUpLink);
 
-        // Set listeners
+        // If button clicked go to loginUser
         loginButton.setOnClickListener(v -> loginUser());
         // Navigate to Sign-Up page
         signUpLink.setOnClickListener(v -> {
@@ -67,10 +67,9 @@ public class LoginActivity extends AppCompatActivity {
 
     private void navigateToShoppingList() {
         Intent intent = new Intent(LoginActivity.this, ShoppingListActivity.class);
-        // Optional: pass Group ID or other data if needed
-        String groupId = "userGroupId"; // Replace with actual group ID logic
+        String groupId = "userGroupId";
         intent.putExtra("GROUP_ID", groupId);
         startActivity(intent);
-        finish(); // Close LoginActivity
+        finish();
     }
 }

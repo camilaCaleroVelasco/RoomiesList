@@ -216,7 +216,6 @@ public class ShoppingListActivity extends AppCompatActivity {
     }
 
 
-    // Make sure updateItemInFirebase is public so it can be called directly when unchecking
     public void updateItemInFirebase(Item item) {
         databaseReference.child(item.getItemId()).setValue(item)
                 .addOnCompleteListener(task -> {

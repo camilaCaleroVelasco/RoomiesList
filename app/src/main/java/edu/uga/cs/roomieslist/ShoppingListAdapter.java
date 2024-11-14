@@ -53,6 +53,7 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
             addedByTextView = itemView.findViewById(R.id.addedByTextView);
             purchaseStatusTextView = itemView.findViewById(R.id.purchaseStatusTextView);
 
+            // Handle when checkbox is checked or unchecked
             selectedCheckBox.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {

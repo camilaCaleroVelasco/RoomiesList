@@ -58,7 +58,7 @@ public class SignupActivity extends AppCompatActivity {
         String groupId = groupIdEditText.getText().toString().trim();
 
         if (name.isEmpty() || email.isEmpty() || password.isEmpty() || groupId.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "All fields need to be filled", Toast.LENGTH_SHORT).show();
             return;
         }
 

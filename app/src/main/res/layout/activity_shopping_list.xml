@@ -9,7 +9,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Title for the shopping list -->
         <TextView
             android:id="@+id/shoppingListTitle"
             android:layout_width="wrap_content"
@@ -20,14 +19,12 @@
             android:layout_gravity="center_horizontal"
             android:paddingTop="30dp" />
 
-        <!-- RecyclerView for displaying shopping list items, expanding to take available space -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/shoppingListRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <!-- Add Item Button -->
         <Button
             android:id="@+id/addItemButton"
             android:layout_width="wrap_content"
@@ -36,7 +33,6 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="10dp" />
 
-        <!-- Mark Selected Items as Purchased Button -->
         <Button
             android:id="@+id/markPurchasedButton"
             android:layout_width="wrap_content"
