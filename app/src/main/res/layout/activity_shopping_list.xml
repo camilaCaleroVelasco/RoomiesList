@@ -1,47 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <!-- Title for the shopping list -->
-    <TextView
-        android:id="@+id/shoppingListTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Group Shopping List"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_gravity="center_horizontal"
-        android:paddingBottom="10dp" />
-
-    <!-- RecyclerView for displaying shopping list items -->
-
-    <!-- Add Item Button -->
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/shoppingListRecyclerView"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <Button
-        android:id="@+id/addItemButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Add Item"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="10dp" />
+        <!-- Title for the shopping list -->
+        <TextView
+            android:id="@+id/shoppingListTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Group Shopping List"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:paddingTop="30dp" />
 
-    <!-- Mark Selected Items as Purchased Button -->
-    <Button
-        android:id="@+id/markPurchasedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Mark Selected as Purchased"
-        android:layout_gravity="center_horizontal" />
+        <!-- RecyclerView for displaying shopping list items, expanding to take available space -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/shoppingListRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
+        <!-- Add Item Button -->
+        <Button
+            android:id="@+id/addItemButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Item"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="10dp" />
 
+        <!-- Mark Selected Items as Purchased Button -->
+        <Button
+            android:id="@+id/markPurchasedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mark Selected as Purchased"
+            android:layout_gravity="center_horizontal" />
 
-</LinearLayout>
+    </LinearLayout>
+</FrameLayout>
