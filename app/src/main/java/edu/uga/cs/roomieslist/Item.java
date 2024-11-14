@@ -8,6 +8,7 @@ public class Item {
     public String purchasedBy;
     private boolean isSelected;
     private String addedBy;
+    private String groupId;
 
     public Item(){
 
@@ -21,6 +22,8 @@ public class Item {
         this.purchasedBy = purchasedBy;
         this.isSelected = false;
         this.addedBy = addedBy;
+//        this.groupId = groupId;
+
     }
 
     public String getName() {
@@ -72,4 +75,11 @@ public class Item {
     public void setAddedBy(String addedBy) {
         this.addedBy = addedBy;
     }
+
+//    public String getGroupId() {
+//        return groupId;
+//    }
+//    public void setGroupId(String groupId) {
+//        this.groupId = groupId;
+//    }
 }

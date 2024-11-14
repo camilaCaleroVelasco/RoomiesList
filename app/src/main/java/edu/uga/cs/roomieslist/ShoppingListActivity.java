@@ -208,7 +208,7 @@ public class ShoppingListActivity extends AppCompatActivity {
             if (task.isSuccessful()) {
                 shoppingList.remove(item);
                 adapter.notifyDataSetChanged();
-                Toast.makeText(ShoppingListActivity.this, "Item deleted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ShoppingListActivity.this, "Item deleted at: ", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(ShoppingListActivity.this, "Failed to delete item", Toast.LENGTH_SHORT).show();
             }
