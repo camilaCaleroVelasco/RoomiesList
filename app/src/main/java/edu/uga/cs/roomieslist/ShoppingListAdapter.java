@@ -103,7 +103,8 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
             } else {
                 purchaseStatusTextView.setText("Not Purchased");
             }
-            addedByTextView.setText("Added by: " + item.getAddedBy());
+            String addedBy = item.getAddedBy() != null ? item.getAddedBy() : "Unknown User";
+            addedByTextView.setText("Added by: " + addedBy);
         }
     }
 

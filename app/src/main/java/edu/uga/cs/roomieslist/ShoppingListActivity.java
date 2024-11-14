@@ -3,6 +3,7 @@ package edu.uga.cs.roomieslist;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,6 +31,8 @@ public class ShoppingListActivity extends AppCompatActivity {
     private DatabaseReference databaseReference;
     private String userGroupId;
     private List<Item> shoppingList;
+    private String userName = "Unknown User";
+
 
 
     @Override
@@ -68,6 +72,9 @@ public class ShoppingListActivity extends AppCompatActivity {
         // Load shopping list for this group
         loadShoppingList();
 
+        // Fetch the user's name when activity created
+        getNameFromFireabse();
+
         // Button for adding new items
         findViewById(R.id.addItemButton).setOnClickListener(v -> showAddItemDialog());
 
@@ -106,8 +113,8 @@ public class ShoppingListActivity extends AppCompatActivity {
             String itemName = input.getText().toString().trim();
             if (!itemName.isEmpty()) {
                 String itemId = databaseReference.push().getKey();
-                String addedBy = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-                Item newItem = new Item(itemId, itemName, 0.0, null, addedBy);
+                // Use the stored userName directly
+                Item newItem = new Item(itemId, itemName, 0.0, null, userName);
                 databaseReference.child(itemId).setValue(newItem);
             }
         });
@@ -214,6 +221,29 @@ public class ShoppingListActivity extends AppCompatActivity {
     }
 
 
+    // Get user name from database
+    public void getNameFromFireabse(){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid();
+            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
+
+            // Fetch the user's name only once
+            userRef.child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists() && snapshot.getValue() != null) {
+                        userName = snapshot.getValue(String.class);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(ShoppingListActivity.this, "Failed to load user name.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
 
 }
 
