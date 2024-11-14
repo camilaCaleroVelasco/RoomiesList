@@ -54,13 +54,13 @@ public class ShoppingListActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onItemPurchasedClick(Item item) {
-                showMarkPurchasedDialog(item);
+            public void onItemDeleteClick(Item item) {
+                deleteItem(item);
             }
 
             @Override
-            public void onItemDeleteClick(Item item) {
-                deleteItem(item);
+            public void updateItemInFirebase(Item item) {
+                showMarkPurchasedDialog(item);
             }
         });
         shoppingListRecyclerView.setAdapter(adapter);
@@ -106,7 +106,8 @@ public class ShoppingListActivity extends AppCompatActivity {
             String itemName = input.getText().toString().trim();
             if (!itemName.isEmpty()) {
                 String itemId = databaseReference.push().getKey();
-                Item newItem = new Item(itemId, itemName, false, 0.0, null);
+                String addedBy = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+                Item newItem = new Item(itemId, itemName, 0.0, null, addedBy);
                 databaseReference.child(itemId).setValue(newItem);
             }
         });
@@ -137,25 +138,40 @@ public class ShoppingListActivity extends AppCompatActivity {
 
     private void showMarkPurchasedDialog(Item item) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Mark as Purchased");
 
-        final EditText input = new EditText(this);
-        input.setHint("Enter Price");
-        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-        builder.setView(input);
+        // Determine if marking or unmarking
+        if (!item.isPurchased()) {
+            builder.setTitle("Unmark as Purchased");
+            builder.setMessage("Do you want to mark this item as unpurchased?");
+            builder.setPositiveButton("Yes", (dialog, which) -> {
+                item.setPurchased(false);
+                item.setPrice(0.0);
+                item.setPurchasedBy(null);
+                item.setSelected(false);
+                updateItemInFirebase(item);
+            });
+            builder.setNegativeButton("No", (dialog, which) -> dialog.cancel());
+        } else {
+            builder.setTitle("Mark as Purchased");
 
-        builder.setPositiveButton("Save", (dialog, which) -> {
-            String priceText = input.getText().toString().trim();
-            if (!priceText.isEmpty()) {
-                double price = Double.parseDouble(priceText);
-                item.setPurchased(true);
-                item.setPrice(price);
-                item.setPurchasedBy(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
-                databaseReference.child(item.getItemId()).setValue(item);
-            }
-        });
+            final EditText input = new EditText(this);
+            input.setHint("Enter Price");
+            input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+            builder.setView(input);
 
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+            builder.setPositiveButton("Save", (dialog, which) -> {
+                String priceText = input.getText().toString().trim();
+                if (!priceText.isEmpty()) {
+                    double price = Double.parseDouble(priceText);
+                    item.setPurchased(true);
+                    item.setPrice(price);
+                    item.setPurchasedBy(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
+                    item.setSelected(true);
+                    updateItemInFirebase(item);
+                }
+            });
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+        }
         builder.show();
     }
 
@@ -183,4 +199,21 @@ public class ShoppingListActivity extends AppCompatActivity {
         });
     }
 
+
+    // Make sure updateItemInFirebase is public so it can be called directly when unchecking
+    public void updateItemInFirebase(Item item) {
+        databaseReference.child(item.getItemId()).setValue(item)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(this, "Item status updated", Toast.LENGTH_SHORT).show();
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        Toast.makeText(this, "Failed to update item status", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+
+
 }
+

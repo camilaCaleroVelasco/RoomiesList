@@ -7,6 +7,7 @@ public class Item {
     public double price;
     public String purchasedBy;
     private boolean isSelected;
+    private String addedBy;
 
     public Item(){
 
@@ -19,15 +20,17 @@ public class Item {
         this.price = 0.0;
         this.purchasedBy = "";
         this.isSelected = false;
+        this.addedBy = "";
     }
 
-    public Item(String itemId, String name, boolean purchased, double price, String purchasedBy) {
+    public Item(String itemId, String name, double price, String purchasedBy, String addedBy) {
         this.itemId = itemId;
         this.name = name;
-        this.purchased = purchased;
+        this.purchased = false;
         this.price = price;
         this.purchasedBy = purchasedBy;
         this.isSelected = false;
+        this.addedBy = addedBy;
     }
 
     public String getName() {
@@ -40,6 +43,10 @@ public class Item {
 
     public String getItemId() {
         return this.itemId;
+    }
+
+    public boolean isPurchased() {
+        return purchased;
     }
 
     public void setPurchased(boolean purchased) {
@@ -60,5 +67,10 @@ public class Item {
 
     public void setSelected(boolean selected){
         isSelected = selected;
+    }
+
+
+    public String getAddedBy() {
+        return addedBy;
     }
 }

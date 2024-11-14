@@ -12,6 +12,21 @@
         android:layout_weight="1"
         android:text="Item Name"
         android:textSize="16sp" />
+    <TextView
+        android:id="@+id/addedByTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Added by: [User]"
+        android:textSize="12sp"
+        android:layout_marginEnd="8dp"/>
+
+    <TextView
+        android:id="@+id/purchaseStatusTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Not Purchased"
+        android:textSize="12sp"
+        android:layout_marginEnd="8dp"/>
 
     <CheckBox
         android:id="@+id/selectedCheckBox"
