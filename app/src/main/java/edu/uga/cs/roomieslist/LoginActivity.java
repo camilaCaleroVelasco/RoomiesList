@@ -44,8 +44,9 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    // Handle user login
     private void loginUser() {
-        String email = emailEditText.getText().toString().trim();
+        String email = emailEditText.getText().toString().trim(); // can delete the trim()
         String password = passwordEditText.getText().toString().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
@@ -65,6 +66,7 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
+    // Once user has logged in, take them to the shopping list activity
     private void navigateToShoppingList() {
         Intent intent = new Intent(LoginActivity.this, ShoppingListActivity.class);
         String groupId = "userGroupId";
