@@ -75,11 +75,6 @@ public class LoginActivity extends AppCompatActivity {
 
     // Once user has logged in, take them to the shopping list activity
     private void navigateToShoppingList() {
-//        Intent intent = new Intent(LoginActivity.this, ShoppingListActivity.class);
-//        String groupId = "userGroupId";
-//        intent.putExtra("GROUP_ID", groupId);
-//        startActivity(intent);
-//        finish();
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (currentUser != null) {
@@ -92,7 +87,6 @@ public class LoginActivity extends AppCompatActivity {
                     if (snapshot.exists()) {
                         String groupId = snapshot.getValue(String.class);
                         if (groupId != null) {
-                            // Pass the actual groupId to the ShoppingListActivity
                             Intent intent = new Intent(LoginActivity.this, ShoppingListActivity.class);
                             intent.putExtra("GROUP_ID", groupId);
                             startActivity(intent);
