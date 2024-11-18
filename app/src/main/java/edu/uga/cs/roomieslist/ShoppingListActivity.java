@@ -83,9 +83,7 @@ public class ShoppingListActivity extends AppCompatActivity {
     }
 
     private void loadShoppingList() {
-        DatabaseReference groupReference = FirebaseDatabase.getInstance()
-                .getReference("ShoppingList")
-                .child(userGroupId);
+        DatabaseReference groupReference = FirebaseDatabase.getInstance().getReference("ShoppingList").child(userGroupId);
         groupReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -115,9 +113,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         builder.setPositiveButton("Add", (dialog, which) -> {
             String itemName = input.getText().toString().trim();
             if (!itemName.isEmpty()) {
-                DatabaseReference groupReference = FirebaseDatabase.getInstance()
-                        .getReference("ShoppingList")
-                        .child(userGroupId);
+                DatabaseReference groupReference = FirebaseDatabase.getInstance().getReference("ShoppingList").child(userGroupId);
                 String itemId = groupReference.push().getKey();
                 // Use the stored userName directly
                 Item newItem = new Item(itemId, itemName, 0.0, null, userName, userGroupId);
