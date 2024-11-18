@@ -8,12 +8,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -68,10 +75,43 @@ public class LoginActivity extends AppCompatActivity {
 
     // Once user has logged in, take them to the shopping list activity
     private void navigateToShoppingList() {
-        Intent intent = new Intent(LoginActivity.this, ShoppingListActivity.class);
-        String groupId = "userGroupId";
-        intent.putExtra("GROUP_ID", groupId);
-        startActivity(intent);
-        finish();
+//        Intent intent = new Intent(LoginActivity.this, ShoppingListActivity.class);
+//        String groupId = "userGroupId";
+//        intent.putExtra("GROUP_ID", groupId);
+//        startActivity(intent);
+//        finish();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
+
+            userRef.child("groupId").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        String groupId = snapshot.getValue(String.class);
+                        if (groupId != null) {
+                            // Pass the actual groupId to the ShoppingListActivity
+                            Intent intent = new Intent(LoginActivity.this, ShoppingListActivity.class);
+                            intent.putExtra("GROUP_ID", groupId);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Toast.makeText(LoginActivity.this, "Group ID not found.", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Group ID not available for this user.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(LoginActivity.this, "Failed to retrieve Group ID.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            Toast.makeText(this, "User not logged in.", Toast.LENGTH_SHORT).show();
+        }
     }
 }
