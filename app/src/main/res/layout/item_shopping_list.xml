@@ -14,6 +14,12 @@
         android:text="Item Name"
         android:textSize="16sp" />
     <TextView
+        android:id="@+id/itemAmountTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Amount: 1"
+        android:padding="8dp" />
+    <TextView
         android:id="@+id/addedByTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

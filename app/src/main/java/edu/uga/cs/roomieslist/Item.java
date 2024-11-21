@@ -9,12 +9,13 @@ public class Item {
     private boolean isSelected;
     private String addedBy;
     private String groupId;
+    private int amount;
 
     public Item(){
 
     }
 
-    public Item(String itemId, String name, double price, String purchasedBy, String addedBy, String groupId) {
+    public Item(String itemId, String name, double price, String purchasedBy, String addedBy, String groupId, int amount) {
         this.itemId = itemId;
         this.name = name;
         this.purchased = false;
@@ -23,6 +24,7 @@ public class Item {
         this.isSelected = false;
         this.addedBy = addedBy;
         this.groupId = groupId;
+        this.amount = amount;
 
     }
 
@@ -81,5 +83,12 @@ public class Item {
     }
     public void setGroupId(String groupId) {
         this.groupId = groupId;
+    }
+
+    public Integer getAmount(){
+        return amount;
+    }
+    public void setAmount(int amount){
+        this.amount = amount;
     }
 }

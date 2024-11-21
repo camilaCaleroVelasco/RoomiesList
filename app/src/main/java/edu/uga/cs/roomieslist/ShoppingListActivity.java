@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -73,7 +74,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         loadShoppingList();
 
         // Fetch the user's name when activity created
-        getNameFromFireabse();
+        getNameFromFirebase();
 
         // Button for adding new items
         findViewById(R.id.addItemButton).setOnClickListener(v -> showAddItemDialog());
@@ -106,17 +107,31 @@ public class ShoppingListActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Add New Item");
 
+        // We need to create a layout in order to hold multiple input fields
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
         final EditText input = new EditText(this);
         input.setHint("Item Name");
-        builder.setView(input);
+        layout.addView(input);
+
+        final EditText amountInput = new EditText(this);
+        amountInput.setHint("Amount");
+        amountInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+        layout.addView(amountInput);
+
+        // Then we see the layout as the view for the dialog
+        builder.setView(layout);
 
         builder.setPositiveButton("Add", (dialog, which) -> {
-            String itemName = input.getText().toString().trim();
+            String itemName = input.getText().toString();
+            String amountText = amountInput.getText().toString();
+
             if (!itemName.isEmpty()) {
+                int amount = Integer.parseInt(amountText);
                 DatabaseReference groupReference = FirebaseDatabase.getInstance().getReference("ShoppingList").child(userGroupId);
                 String itemId = groupReference.push().getKey();
-                // Use the stored userName directly
-                Item newItem = new Item(itemId, itemName, 0.0, null, userName, userGroupId);
+                Item newItem = new Item(itemId, itemName, 0.0, null, userName, userGroupId, amount);
                 groupReference.child(itemId).setValue(newItem).addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         // Add the item to the local list and refresh adapter
@@ -142,11 +157,33 @@ public class ShoppingListActivity extends AppCompatActivity {
         input.setText(item.getName());
         builder.setView(input);
 
+        final EditText amountInput = new EditText(this);
+        amountInput.setText(String.valueOf(item.getAmount()));
+        amountInput.setHint("Item Amount");
+        amountInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(amountInput);
+
         builder.setPositiveButton("Save", (dialog, which) -> {
             String newName = input.getText().toString().trim();
-            if (!newName.isEmpty()) {
+            String newAmountStr = amountInput.getText().toString().trim();
+
+            if (!newName.isEmpty() && !newAmountStr.isEmpty()) {
+                int newAmount = Integer.parseInt(newAmountStr);
                 item.setName(newName);
-                databaseReference.child(item.getItemId()).setValue(item);
+                item.setAmount(newAmount);
+                FirebaseDatabase.getInstance()
+                        .getReference("ShoppingList")
+                        .child(userGroupId)
+                        .child(item.getItemId())
+                        .setValue(item)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(this, "Item updated", Toast.LENGTH_SHORT).show();
+                                adapter.notifyDataSetChanged();
+                            } else {
+                                Toast.makeText(this, "Failed to update item", Toast.LENGTH_SHORT).show();
+                            }
+                        });
             }
         });
 
@@ -232,7 +269,7 @@ public class ShoppingListActivity extends AppCompatActivity {
 
 
     // Get user name from database
-    public void getNameFromFireabse(){
+    public void getNameFromFirebase(){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             String userId = user.getUid();

@@ -45,6 +45,7 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
         private CheckBox selectedCheckBox;
         TextView addedByTextView;
         TextView purchaseStatusTextView;
+        private TextView itemAmountTextView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -52,6 +53,7 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
             selectedCheckBox = itemView.findViewById(R.id.selectedCheckBox);
             addedByTextView = itemView.findViewById(R.id.addedByTextView);
             purchaseStatusTextView = itemView.findViewById(R.id.purchaseStatusTextView);
+            itemAmountTextView = itemView.findViewById(R.id.itemAmountTextView);
 
             // Handle when checkbox is checked or unchecked
             selectedCheckBox.setOnClickListener(v -> {
@@ -106,6 +108,7 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
             }
             String addedBy = item.getAddedBy() != null ? item.getAddedBy() : "Unknown User";
             addedByTextView.setText("Added by: " + addedBy);
+            itemAmountTextView.setText("Amount: " + item.getAmount());
         }
     }
 
