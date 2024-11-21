@@ -1,6 +1,7 @@
 package edu.uga.cs.roomieslist;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -81,6 +82,15 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         // Button for marking selected items as purchased
         findViewById(R.id.markPurchasedButton).setOnClickListener(v -> markItemsAsPurchased());
+
+        // Handle Logout Button Click
+        findViewById(R.id.logoutButton).setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut(); // Sign out the user
+            Intent intent = new Intent(ShoppingListActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear back stack
+            startActivity(intent);
+            finish(); // Close current activity
+        });
     }
 
     private void loadShoppingList() {
