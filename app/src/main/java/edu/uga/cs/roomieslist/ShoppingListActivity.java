@@ -34,6 +34,7 @@ public class ShoppingListActivity extends AppCompatActivity {
     private String userGroupId;
     private List<Item> shoppingList;
     private String userName = "Unknown User";
+    private DatabaseReference basketReference;
 
 
 
@@ -49,6 +50,8 @@ public class ShoppingListActivity extends AppCompatActivity {
         // Reference to this group's shopping list in Firebase
         databaseReference = FirebaseDatabase.getInstance().getReference("ShoppingList").child(userGroupId);
 
+        // Initialize the Firebase reference for the shopping basket
+        basketReference = FirebaseDatabase.getInstance().getReference("ShoppingBasket").child(userGroupId);
         // Initialize UI elements
         shoppingListRecyclerView = findViewById(R.id.shoppingListRecyclerView);
         shoppingListRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -80,8 +83,15 @@ public class ShoppingListActivity extends AppCompatActivity {
         // Button for adding new items
         findViewById(R.id.addItemButton).setOnClickListener(v -> showAddItemDialog());
 
-        // Button for marking selected items as purchased
-        findViewById(R.id.markPurchasedButton).setOnClickListener(v -> markItemsAsPurchased());
+        findViewById(R.id.markPurchasedButton).setOnClickListener(v -> {
+            markItemsAsPurchased(() -> { // Callback after marking items
+                Intent intent = new Intent(ShoppingListActivity.this, ShoppingBasketActivity.class);
+                intent.putExtra("GROUP_ID", userGroupId);
+                startActivity(intent);
+            });
+        });
+
+
 
         // Handle Logout Button Click
         findViewById(R.id.logoutButton).setOnClickListener(v -> {
@@ -240,12 +250,62 @@ public class ShoppingListActivity extends AppCompatActivity {
         builder.show();
     }
 
-    private void markItemsAsPurchased() {
+    private void markItemsAsPurchased(Runnable onComplete) {
+        List<Item> itemsToUpdate = new ArrayList<>();
+
         for (Item item : shoppingList) {
             if (item.isSelected()) {  // Assuming you have an isSelected flag in the adapter
                 item.setPurchased(true);
                 item.setPurchasedBy(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
-                databaseReference.child(item.getItemId()).setValue(item);
+                itemsToUpdate.add(item); // Collect items to update
+
+                // Add the item to the ShoppingBasket in Firebase
+                basketReference.child(item.getItemId()).setValue(item).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("ShoppingListActivity", "Item added to basket: " + item.getName());
+                    } else {
+                        Log.e("ShoppingListActivity", "Failed to add item to basket.");
+                    }
+                });
+                // Wait for Firebase operations to finish
+                if (!itemsToUpdate.isEmpty()) {
+                    databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            for (Item item : itemsToUpdate) {
+                                // Update the shopping list (if needed)
+                                databaseReference.child(item.getItemId()).setValue(item);
+                            }
+                            adapter.notifyDataSetChanged();
+
+                            // Trigger callback after all operations
+                            if (onComplete != null) {
+                                onComplete.run();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Log.e("ShoppingListActivity", "Failed to update items: " + error.getMessage());
+                        }
+                    });
+                } else {
+                    // If no items are selected, directly call the callback
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
+                }
+
+//                // Remove the item from the ShoppingList in Firebase
+//            databaseReference.child(item.getItemId()).removeValue().addOnCompleteListener(task -> {
+//                if (task.isSuccessful()) {
+//                    Log.d("ShoppingListActivity", "Item removed from shopping list: " + item.getName());
+//                    shoppingList.remove(item); // Update local list
+//                    adapter.notifyDataSetChanged();
+//                } else {
+//                    Log.e("ShoppingListActivity", "Failed to remove item from shopping list.");
+//                }
+//            });
             }
         }
         adapter.notifyDataSetChanged();
