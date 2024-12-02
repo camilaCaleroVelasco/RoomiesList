@@ -1,5 +1,6 @@
 package edu.uga.cs.roomieslist;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -13,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,6 +31,7 @@ public class ShoppingBasketActivity extends AppCompatActivity {
     private DatabaseReference basketReference;
     private String userGroupId;
     private List<Item> basketItems;
+    private DatabaseReference shoppingListReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +48,7 @@ public class ShoppingBasketActivity extends AppCompatActivity {
         }
         // Initialize Firebase reference for the shopping basket
         basketReference = FirebaseDatabase.getInstance().getReference("ShoppingBasket").child(userGroupId);
+        shoppingListReference = FirebaseDatabase.getInstance().getReference("ShoppingList").child(userGroupId);
 
         // Initialize RecyclerView and adapter
         shoppingBasketRecyclerView = findViewById(R.id.shoppingBasketRecyclerView);
@@ -58,18 +62,27 @@ public class ShoppingBasketActivity extends AppCompatActivity {
 
             @Override
             public void onItemDeleteClick(Item item) {
-                deleteItemFromBasket(item);
+                deleteItemMoveBackToList(item);
             }
 
             @Override
             public void updateItemInFirebase(Item item) {
-                Toast.makeText(ShoppingBasketActivity.this, "Updating basket items is not allowed.", Toast.LENGTH_SHORT).show();
+                itemPurchaseStatus(item);
             }
         });
         shoppingBasketRecyclerView.setAdapter(adapter);
 
         // Load basket items
         loadBasketItems();
+
+        // Handle Logout Button Click
+        findViewById(R.id.logoutButton2).setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut(); // Sign out the user
+            Intent intent = new Intent(ShoppingBasketActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear back stack
+            startActivity(intent);
+            finish(); // Close current activity
+        });
     }
 
     private void loadBasketItems() {
@@ -94,16 +107,59 @@ public class ShoppingBasketActivity extends AppCompatActivity {
         });
     }
 
-    private void deleteItemFromBasket(Item item) {
+    private void deleteItemMoveBackToList(Item item) {
+        // Remove the item from the basket
         basketReference.child(item.getItemId()).removeValue().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                basketItems.remove(item);
-                adapter.notifyDataSetChanged();
-                Toast.makeText(this, "Item removed from basket", Toast.LENGTH_SHORT).show();
+
+                // Reset the item properties for moving back to the shopping list
+                item.setPurchased(false);
+                item.setPurchasedBy(null);
+                item.setSelected(false);
+                item.setPrice(0.0);
+
+                // Add the item back to the shopping list
+                shoppingListReference.child(item.getItemId()).setValue(item).addOnCompleteListener(addTask -> {
+                    if (addTask.isSuccessful()) {
+                        basketItems.remove(item);
+                        adapter.notifyDataSetChanged();
+                        Toast.makeText(this, "Item moved back to shopping list", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.e("ShoppingBasketActivity", "Failed to add item back to shopping list.");
+                        Toast.makeText(this, "Failed to move item to shopping list", Toast.LENGTH_SHORT).show();
+                    }
+                });
             } else {
-                Toast.makeText(this, "Failed to remove item", Toast.LENGTH_SHORT).show();
-            }
+                Log.e("ShoppingBasketActivity", "Failed to remove item from basket.");
+                Toast.makeText(this, "Failed to remove item from basket", Toast.LENGTH_SHORT).show();            }
         });
     }
+
+    private void itemPurchaseStatus(Item item) {
+        if (item.isPurchased()) {
+            // Mark as purchased: Move to basket and remove from shopping list
+            basketReference.child(item.getItemId()).setValue(item).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    shoppingListReference.child(item.getItemId()).removeValue().addOnCompleteListener(removeTask -> {
+                        if (removeTask.isSuccessful()) {
+                            loadBasketItems(); // Refresh basket
+                        }
+                    });
+                }
+            });
+        } else {
+            // Unmark as purchased: Move back to shopping list and remove from basket
+            shoppingListReference.child(item.getItemId()).setValue(item).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    basketReference.child(item.getItemId()).removeValue().addOnCompleteListener(removeTask -> {
+                        if (removeTask.isSuccessful()) {
+                            loadBasketItems(); // Refresh basket
+                        }
+                    });
+                }
+            });
+        }
+    }
+
 
 }

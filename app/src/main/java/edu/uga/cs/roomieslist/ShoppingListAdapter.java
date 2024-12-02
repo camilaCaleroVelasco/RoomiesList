@@ -51,7 +51,7 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
             super(itemView);
             itemNameTextView = itemView.findViewById(R.id.itemNameTextView);
             selectedCheckBox = itemView.findViewById(R.id.selectedCheckBox);
-            addedByTextView = itemView.findViewById(R.id.addedByTextView);
+//            addedByTextView = itemView.findViewById(R.id.addedByTextView);
             purchaseStatusTextView = itemView.findViewById(R.id.purchaseStatusTextView);
             itemAmountTextView = itemView.findViewById(R.id.itemAmountTextView);
 
@@ -72,11 +72,12 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
                         item.setPurchased(false);
                         item.setPrice(0.0);
                         item.setPurchasedBy(null);
+                        item.setSelected(false);
                         listener.updateItemInFirebase(item); // Directly update Firebase without dialog
                     }
 
-                    notifyItemChanged(position); // Refresh item view
                 }
+                notifyDataSetChanged();
             });
 
             // Edit item when clicked
@@ -107,7 +108,7 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
                 purchaseStatusTextView.setText("Not Purchased");
             }
             String addedBy = item.getAddedBy() != null ? item.getAddedBy() : "Unknown User";
-            addedByTextView.setText("Added by: " + addedBy);
+//            addedByTextView.setText("Added by: " + addedBy);
             itemAmountTextView.setText("Amount: " + item.getAmount());
         }
     }

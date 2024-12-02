@@ -2,9 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
     android:gravity="center"
-    android:padding="8dp">
+    android:orientation="horizontal"
+    android:padding="10dp">
 
     <TextView
         android:id="@+id/itemNameTextView"
@@ -13,30 +13,33 @@
         android:layout_weight="1"
         android:text="Item Name"
         android:textSize="16sp" />
+
     <TextView
         android:id="@+id/itemAmountTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Amount: 1"
-        android:padding="8dp" />
-    <TextView
-        android:id="@+id/addedByTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Added by: [User]"
-        android:textSize="12sp"
-        android:layout_marginEnd="8dp"/>
+        android:padding="8dp"
+        android:text="Amount: 1" />
+
+    <!--    <TextView-->
+    <!--        android:id="@+id/addedByTextView"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginEnd="8dp"-->
+    <!--        android:text="Added by: [User]"-->
+    <!--        android:textSize="12sp" />-->
 
     <TextView
         android:id="@+id/purchaseStatusTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
         android:text="Not Purchased"
-        android:textSize="12sp"
-        android:layout_marginEnd="8dp"/>
+        android:textSize="12sp" />
 
     <CheckBox
         android:id="@+id/selectedCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
 </LinearLayout>
