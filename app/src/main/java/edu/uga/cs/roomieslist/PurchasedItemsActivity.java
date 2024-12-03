@@ -55,6 +55,15 @@ public class PurchasedItemsActivity extends AppCompatActivity {
         Button settleCostsButton = findViewById(R.id.settleCostsButton);
         settleCostsButton.setOnClickListener(v -> settleCosts());
 
+        // Back to Shopping List button
+        Button backToShoppingListButton = findViewById(R.id.backToShoppingListButton);
+        backToShoppingListButton.setOnClickListener(v -> {
+            Intent intent = new Intent(PurchasedItemsActivity.this, ShoppingListActivity.class);
+            intent.putExtra("GROUP_ID", userGroupId); // Pass group ID to Shopping List
+            startActivity(intent);
+            finish(); // Close current activity
+        });
+
         // Handle Logout Button Click
         findViewById(R.id.logoutButton3).setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut(); // Sign out the user

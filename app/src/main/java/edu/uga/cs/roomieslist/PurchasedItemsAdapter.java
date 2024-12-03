@@ -46,7 +46,8 @@ public class PurchasedItemsAdapter extends RecyclerView.Adapter<PurchasedItemsAd
         PurchasedRecord record = purchasedRecords.get(position);
 
         // Bind data to views
-        holder.purchaseRoommateTextView.setText("Purchased by: " + record.getPurchasedBy());
+        String purchaserName = record.getPurchasedBy() != null ? record.getPurchasedBy() : "Unknown User";
+        holder.purchaseRoommateTextView.setText("Purchased by: " + purchaserName);
         holder.purchaseTotalPriceTextView.setText(String.format(Locale.US, "Total Price: $%.2f", record.getTotalPrice()));
 
         // Convert timestamp to readable date
@@ -105,7 +106,9 @@ public class PurchasedItemsAdapter extends RecyclerView.Adapter<PurchasedItemsAd
 
         builder.setPositiveButton("Save", (dialog, which) -> {
             double newPrice = Double.parseDouble(input.getText().toString());
-            listener.onUpdatePriceClick(record, newPrice);
+            if (listener != null) {
+                listener.onUpdatePriceClick(record, newPrice);
+            }
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
 

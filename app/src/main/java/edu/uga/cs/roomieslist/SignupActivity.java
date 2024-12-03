@@ -19,6 +19,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -58,7 +60,7 @@ public class SignupActivity extends AppCompatActivity {
 
     // Handle user registration
     private void registerUser() {
-        String name = nameEditText.getText().toString().trim(); // remove the trim()
+        String name = nameEditText.getText().toString().trim();
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
         String groupId = groupIdEditText.getText().toString().trim();
@@ -73,36 +75,47 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        // This is how we can create a new user using an email/password combination.
-        // Note that we also add an onComplete listener, which will be invoked once
-        // a new user has been created by Firebase.  This is how we will know the
-        // new user creation succeeded or failed.
-        // If a new user has been created, Firebase already signs in the new user;
-        // no separate sign in is needed.
+        // Create a new user using email and password
         mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener( SignupActivity.this, new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(SignupActivity.this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            String userId = mAuth.getCurrentUser().getUid();
-                            User user = new User(name, email, groupId);
-                            databaseReference.child(userId).setValue(user)
-                                    .addOnCompleteListener(dbTask -> {
-                                        if (dbTask.isSuccessful()) {
-                                            Toast.makeText(SignupActivity.this, "Registration successful for : " + email, Toast.LENGTH_SHORT).show();
-                                            // Sign in success, update UI with the signed-in user's information
-                                            Log.d(DEBUG_TAG, "createUserWithEmail: success");
-                                            Intent intent = new Intent(SignupActivity.this, MainActivity.class);
-                                            startActivity(intent);
-                                            finish();
-                                        } else {
-                                            Log.w(DEBUG_TAG, "saveUserRegistration: failure", dbTask.getException());
-                                            Toast.makeText(SignupActivity.this, "Failed to save user registration.", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
+                            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                            if (firebaseUser != null) {
+                                // Update the user's display name
+                                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                        .setDisplayName(name) // Set the user's name
+                                        .build();
+
+                                firebaseUser.updateProfile(profileUpdates)
+                                        .addOnCompleteListener(profileTask -> {
+                                            if (profileTask.isSuccessful()) {
+                                                Log.d(DEBUG_TAG, "User profile updated with name: " + name);
+                                            } else {
+                                                Log.w(DEBUG_TAG, "Failed to update user profile", profileTask.getException());
+                                            }
+                                        });
+
+                                // Save user details to the Realtime Database
+                                String userId = firebaseUser.getUid();
+                                User user = new User(name, email, groupId);
+                                databaseReference.child(userId).setValue(user)
+                                        .addOnCompleteListener(dbTask -> {
+                                            if (dbTask.isSuccessful()) {
+                                                Toast.makeText(SignupActivity.this, "Registration successful for: " + email, Toast.LENGTH_SHORT).show();
+                                                Intent intent = new Intent(SignupActivity.this, MainActivity.class);
+                                                startActivity(intent);
+                                                finish();
+                                            } else {
+                                                Log.w(DEBUG_TAG, "Failed to save user details", dbTask.getException());
+                                                Toast.makeText(SignupActivity.this, "Failed to save user details.", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
                         } else {
                             // If sign in fails, display a message to the user.
-                            Log.w(DEBUG_TAG, "createUserWithEmail: failure", task.getException());
+                            Log.w(DEBUG_TAG, "createUserWithEmail:failure", task.getException());
                             Toast.makeText(SignupActivity.this, "Registration failed.", Toast.LENGTH_SHORT).show();
                         }
                     }

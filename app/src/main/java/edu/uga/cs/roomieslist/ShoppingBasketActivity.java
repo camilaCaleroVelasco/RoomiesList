@@ -44,6 +44,7 @@ public class ShoppingBasketActivity extends AppCompatActivity {
             finish();
             return;
         }
+
         // Initialize Firebase reference for the shopping basket
         basketReference = FirebaseDatabase.getInstance().getReference("ShoppingBasket").child(userGroupId);
         shoppingListReference = FirebaseDatabase.getInstance().getReference("ShoppingList").child(userGroupId);
@@ -171,6 +172,12 @@ public class ShoppingBasketActivity extends AppCompatActivity {
             return;
         }
 
+        // Retrieve the current user's name
+        String userName = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+        if (userName == null || userName.isEmpty()) {
+            userName = "Unknown User"; // Fallback if name is unavailable
+        }
+
         // Calculate total price
         double totalPrice = 0.0;
         for (Item item : basketItems) {
@@ -190,7 +197,7 @@ public class ShoppingBasketActivity extends AppCompatActivity {
 
         // Create the purchased record
         PurchasedRecord record = new PurchasedRecord(
-                FirebaseAuth.getInstance().getCurrentUser().getDisplayName(), // purchasedBy
+                userName, // purchasedBy
                 new ArrayList<>(basketItems), // items
                 totalPrice, // totalPrice
                 System.currentTimeMillis() // timestamp
