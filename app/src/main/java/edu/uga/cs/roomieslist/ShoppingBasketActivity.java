@@ -3,6 +3,7 @@ package edu.uga.cs.roomieslist;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -83,6 +84,10 @@ public class ShoppingBasketActivity extends AppCompatActivity {
             startActivity(intent);
             finish(); // Close current activity
         });
+
+        // Handle Checkout Button Click
+        Button checkoutButton = findViewById(R.id.checkoutButton);
+        checkoutButton.setOnClickListener(v -> checkoutItems());
     }
 
     private void loadBasketItems() {
@@ -131,7 +136,8 @@ public class ShoppingBasketActivity extends AppCompatActivity {
                 });
             } else {
                 Log.e("ShoppingBasketActivity", "Failed to remove item from basket.");
-                Toast.makeText(this, "Failed to remove item from basket", Toast.LENGTH_SHORT).show();            }
+                Toast.makeText(this, "Failed to remove item from basket", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -161,5 +167,62 @@ public class ShoppingBasketActivity extends AppCompatActivity {
         }
     }
 
+    private void checkoutItems() {
+        Log.d("Checkout", "Checkout button clicked");
 
+        if (basketItems.isEmpty()) {
+            Log.d("Checkout", "Basket is empty");
+            Toast.makeText(this, "Your basket is empty!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        double totalPrice = 0.0;
+        for (Item item : basketItems) {
+            totalPrice += item.getPrice();
+        }
+        Log.d("Checkout", "Total price calculated: " + totalPrice);
+
+        String purchaseId = FirebaseDatabase.getInstance()
+                .getReference("PurchasedItems")
+                .child(userGroupId)
+                .push().getKey();
+
+        if (purchaseId == null) {
+            Log.e("Checkout", "Failed to generate purchase ID");
+            Toast.makeText(this, "Failed to generate purchase ID.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        PurchasedRecord record = new PurchasedRecord(
+                FirebaseAuth.getInstance().getCurrentUser().getDisplayName(), // purchasedBy
+                new ArrayList<>(basketItems), // items
+                totalPrice, // totalPrice
+                System.currentTimeMillis() // timestamp
+        );
+
+        DatabaseReference purchasedItemsRef = FirebaseDatabase.getInstance()
+                .getReference("PurchasedItems")
+                .child(userGroupId)
+                .child(purchaseId);
+
+        purchasedItemsRef.setValue(record).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Log.d("Checkout", "Purchased record saved successfully");
+                basketReference.removeValue().addOnCompleteListener(clearTask -> {
+                    if (clearTask.isSuccessful()) {
+                        Log.d("Checkout", "Basket cleared");
+                        basketItems.clear();
+                        adapter.notifyDataSetChanged();
+                        Toast.makeText(this, "Checkout successful!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.e("Checkout", "Failed to clear basket");
+                        Toast.makeText(this, "Failed to clear basket.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                Log.e("Checkout", "Failed to save purchased record");
+                Toast.makeText(this, "Checkout failed.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 }

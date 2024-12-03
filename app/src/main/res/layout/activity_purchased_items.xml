@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
-
     <Button
-        android:id="@+id/logoutButton2"
+        android:id="@+id/logoutButton3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="4dp"
@@ -20,28 +18,30 @@
         android:layout_gravity="end"
         android:textSize="14sp" />
 
+    <!-- Title -->
     <TextView
-        android:id="@+id/titleBasket"
+        android:id="@+id/purchasedItemsTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:paddingTop="24dp"
-        android:text="Basket"
+        android:text="Purchased Items"
         android:textSize="20sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal" />
 
-
+    <!-- RecyclerView for Purchased Items -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/shoppingBasketRecyclerView"
+        android:id="@+id/purchasedItemsRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="476dp" />
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
+    <!-- Settle Costs Button -->
     <Button
-        android:id="@+id/checkoutButton"
+        android:id="@+id/settleCostsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="16dp"
-        android:text="Checkout" />
+        android:text="Settle Costs" />
 
 </LinearLayout>
