@@ -152,6 +152,7 @@ public class ShoppingBasketActivity extends AppCompatActivity {
             });
         } else {
             // Unmark as purchased: Move back to shopping list and remove from basket
+            item.setPurchasedBy(null); // Clear the purchaser's name
             shoppingListReference.child(item.getItemId()).setValue(item).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     basketReference.child(item.getItemId()).removeValue().addOnCompleteListener(removeTask -> {

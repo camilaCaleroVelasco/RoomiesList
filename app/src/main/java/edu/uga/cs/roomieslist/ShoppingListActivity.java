@@ -110,7 +110,10 @@ public class ShoppingListActivity extends AppCompatActivity {
                 shoppingList.clear();
                 for (DataSnapshot itemSnapshot : snapshot.getChildren()) {
                     Item item = itemSnapshot.getValue(Item.class);
-                    shoppingList.add(item);
+                    // Avoid duplicate items
+                    if (item != null && !shoppingList.contains(item)){
+                        shoppingList.add(item);
+                    }
                 }
                 adapter.notifyDataSetChanged();
             }
@@ -153,9 +156,6 @@ public class ShoppingListActivity extends AppCompatActivity {
                 Item newItem = new Item(itemId, itemName, 0.0, null, userName, userGroupId, amount);
                 groupReference.child(itemId).setValue(newItem).addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // Add the item to the local list and refresh adapter
-                        shoppingList.add(newItem);
-                        adapter.notifyDataSetChanged(); // Refreshes the RecyclerView
                         Toast.makeText(ShoppingListActivity.this, "Item added successfully", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(ShoppingListActivity.this, "Failed to add item", Toast.LENGTH_SHORT).show();
@@ -263,7 +263,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         for (Item item : shoppingList) {
             if (item.isSelected()) {  // Assuming you have an isSelected flag in the adapter
                 item.setPurchased(true);
-                item.setPurchasedBy(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
+                item.setPurchasedBy(FirebaseAuth.getInstance().getCurrentUser() != null ? FirebaseAuth.getInstance().getCurrentUser().getDisplayName() : "Unknown User");
                 itemsToUpdate.add(item); // Collect items to update
 
             }
