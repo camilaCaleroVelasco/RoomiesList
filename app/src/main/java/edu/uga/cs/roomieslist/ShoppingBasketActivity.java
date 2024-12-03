@@ -9,9 +9,6 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -168,31 +165,29 @@ public class ShoppingBasketActivity extends AppCompatActivity {
     }
 
     private void checkoutItems() {
-        Log.d("Checkout", "Checkout button clicked");
-
         if (basketItems.isEmpty()) {
-            Log.d("Checkout", "Basket is empty");
             Toast.makeText(this, "Your basket is empty!", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Calculate total price
         double totalPrice = 0.0;
         for (Item item : basketItems) {
             totalPrice += item.getPrice();
         }
-        Log.d("Checkout", "Total price calculated: " + totalPrice);
 
+        // Generate unique ID for the purchase record
         String purchaseId = FirebaseDatabase.getInstance()
                 .getReference("PurchasedItems")
                 .child(userGroupId)
                 .push().getKey();
 
         if (purchaseId == null) {
-            Log.e("Checkout", "Failed to generate purchase ID");
             Toast.makeText(this, "Failed to generate purchase ID.", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Create the purchased record
         PurchasedRecord record = new PurchasedRecord(
                 FirebaseAuth.getInstance().getCurrentUser().getDisplayName(), // purchasedBy
                 new ArrayList<>(basketItems), // items
@@ -200,27 +195,32 @@ public class ShoppingBasketActivity extends AppCompatActivity {
                 System.currentTimeMillis() // timestamp
         );
 
+        // Reference to the purchased items node
         DatabaseReference purchasedItemsRef = FirebaseDatabase.getInstance()
                 .getReference("PurchasedItems")
                 .child(userGroupId)
                 .child(purchaseId);
 
+        // Save the record to Firebase
         purchasedItemsRef.setValue(record).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                Log.d("Checkout", "Purchased record saved successfully");
+                // Clear the basket after successful checkout
                 basketReference.removeValue().addOnCompleteListener(clearTask -> {
                     if (clearTask.isSuccessful()) {
-                        Log.d("Checkout", "Basket cleared");
                         basketItems.clear();
                         adapter.notifyDataSetChanged();
                         Toast.makeText(this, "Checkout successful!", Toast.LENGTH_SHORT).show();
+
+                        // Navigate to the Purchased Items Page
+                        Intent intent = new Intent(ShoppingBasketActivity.this, PurchasedItemsActivity.class);
+                        intent.putExtra("GROUP_ID", userGroupId); // Pass the group ID
+                        startActivity(intent);
+                        finish(); // Close the basket page
                     } else {
-                        Log.e("Checkout", "Failed to clear basket");
                         Toast.makeText(this, "Failed to clear basket.", Toast.LENGTH_SHORT).show();
                     }
                 });
             } else {
-                Log.e("Checkout", "Failed to save purchased record");
                 Toast.makeText(this, "Checkout failed.", Toast.LENGTH_SHORT).show();
             }
         });
