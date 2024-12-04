@@ -137,23 +137,34 @@ public class PurchasedItemsActivity extends AppCompatActivity {
         int roommateCount = roommateSpending.size();
         double averageSpending = totalCost / roommateCount;
 
-        // Compute differences for each roommate
-        StringBuilder results = new StringBuilder("Settlement Results:\n\n");
+        // Build the formatted dialog
+        StringBuilder results = new StringBuilder();
+
+        // Roommates (Spent) Section
+        results.append("<b><u>Roommates (Spent):</u></b><br>");
+        for (Map.Entry<String, Double> entry : roommateSpending.entrySet()) {
+            String roommate = entry.getKey();
+            double spent = entry.getValue();
+            results.append(String.format("\u2022 %s: $%.2f<br>", roommate, spent));
+        }
+
+        // Total and Average Section
+        results.append(String.format("<br><b>Total:</b> $%.2f<br>", totalCost));
+        results.append(String.format("<b>Average:</b> $%.2f<br>", averageSpending));
+
+        // Difference from Average Section
+        results.append("<br><b><u>Difference from Average:</u></b><br>");
         for (Map.Entry<String, Double> entry : roommateSpending.entrySet()) {
             String roommate = entry.getKey();
             double spent = entry.getValue();
             double difference = spent - averageSpending;
-
-            results.append(String.format("%s:\n  Spent: $%.2f\n  Difference: $%.2f\n\n",
-                    roommate, spent, difference));
+            results.append(String.format("\u2022 %s: $%.2f<br>", roommate, difference));
         }
 
-        results.append(String.format("Total Spent: $%.2f\nAverage Spent: $%.2f\n", totalCost, averageSpending));
-
-        // Show results in a dialog
+        // Show the results in a dialog
         new AlertDialog.Builder(this)
                 .setTitle("Settle Costs")
-                .setMessage(results.toString())
+                .setMessage(android.text.Html.fromHtml(results.toString())) // Supports formatting
                 .setPositiveButton("OK", (dialog, which) -> clearPurchasedItems())
                 .setNegativeButton("Cancel", null)
                 .show();
