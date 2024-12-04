@@ -29,6 +29,7 @@ public class PurchasedItemsActivity extends AppCompatActivity {
     private RecyclerView purchasedItemsRecyclerView;
     private PurchasedItemsAdapter adapter;
     private DatabaseReference purchasedItemsReference;
+    private DatabaseReference shoppingListReference;
     private List<PurchasedRecord> purchasedRecords;
     private String userGroupId;
 
@@ -37,15 +38,21 @@ public class PurchasedItemsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_purchased_items);
 
-        // Initialize Firebase reference
+        // Initialize Firebase references
         userGroupId = getIntent().getStringExtra("GROUP_ID");
         purchasedItemsReference = FirebaseDatabase.getInstance().getReference("PurchasedItems").child(userGroupId);
+        shoppingListReference = FirebaseDatabase.getInstance().getReference("ShoppingList").child(userGroupId);
 
         // Initialize RecyclerView
         purchasedItemsRecyclerView = findViewById(R.id.purchasedItemsRecyclerView);
         purchasedItemsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         purchasedRecords = new ArrayList<>();
-        adapter = new PurchasedItemsAdapter(purchasedRecords, null);
+        adapter = new PurchasedItemsAdapter(purchasedRecords, userGroupId, new PurchasedItemsAdapter.OnItemClickListener() {
+            @Override
+            public void onUpdatePriceClick(PurchasedRecord record, double newPrice) {
+                updatePurchasePrice(record, newPrice);
+            }
+        });
         purchasedItemsRecyclerView.setAdapter(adapter);
 
         // Load purchased items
@@ -93,6 +100,18 @@ public class PurchasedItemsActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(PurchasedItemsActivity.this, "Failed to load purchased items.", Toast.LENGTH_SHORT).show();
                 Log.e("PurchasedItemsActivity", "Error: " + error.getMessage());
+            }
+        });
+    }
+
+    private void updatePurchasePrice(PurchasedRecord record, double newPrice) {
+        purchasedItemsReference.child(record.getId()).child("totalPrice").setValue(newPrice).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                record.setTotalPrice(newPrice);
+                adapter.notifyDataSetChanged();
+                Toast.makeText(PurchasedItemsActivity.this, "Purchase price updated.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(PurchasedItemsActivity.this, "Failed to update purchase price.", Toast.LENGTH_SHORT).show();
             }
         });
     }

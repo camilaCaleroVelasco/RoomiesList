@@ -6,8 +6,7 @@
     android:padding="10dp"
     android:background="@android:color/white"
     android:layout_marginBottom="8dp"
-    android:elevation="4dp"
-    android:backgroundTint="@android:color/background_light">
+    android:elevation="4dp">
 
     <!-- Roommate Name -->
     <TextView
@@ -48,5 +47,17 @@
         android:textSize="14sp"
         android:textColor="@android:color/black"
         android:layout_marginTop="6dp" />
+
+    <!-- Edit Group Button -->
+    <Button
+        android:id="@+id/editGroupButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Edit Group"
+        android:textSize="14sp"
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center_horizontal"
+        android:backgroundTint="@android:color/holo_purple"
+        android:textColor="@android:color/white" />
 
 </LinearLayout>

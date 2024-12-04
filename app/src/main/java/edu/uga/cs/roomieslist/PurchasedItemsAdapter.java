@@ -1,11 +1,12 @@
 package edu.uga.cs.roomieslist;
 
-import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -20,16 +21,17 @@ public class PurchasedItemsAdapter extends RecyclerView.Adapter<PurchasedItemsAd
 
     private final List<PurchasedRecord> purchasedRecords;
     private final OnItemClickListener listener;
+    private final String groupId; // Pass groupId directly to the adapter
 
     // Interface for click actions
     public interface OnItemClickListener {
-        void onItemRemoveClick(PurchasedRecord record, Item item);
         void onUpdatePriceClick(PurchasedRecord record, double newPrice);
     }
 
     // Constructor
-    public PurchasedItemsAdapter(List<PurchasedRecord> purchasedRecords, OnItemClickListener listener) {
+    public PurchasedItemsAdapter(List<PurchasedRecord> purchasedRecords, String groupId, OnItemClickListener listener) {
         this.purchasedRecords = purchasedRecords;
+        this.groupId = groupId;
         this.listener = listener;
     }
 
@@ -55,17 +57,33 @@ public class PurchasedItemsAdapter extends RecyclerView.Adapter<PurchasedItemsAd
         holder.purchaseTimestampTextView.setText("Purchased on: " + date);
 
         // Build a comma-separated string of items
-        StringBuilder itemsStringBuilder = new StringBuilder("Items: ");
-        for (Item item : record.getItems()) {
-            itemsStringBuilder.append(item.getName()).append(", ");
+        List<Item> items = record.getItems();
+        if (items != null && !items.isEmpty()) {
+            StringBuilder itemsStringBuilder = new StringBuilder("Items: ");
+            for (Item item : items) {
+                if (item != null && item.getName() != null) { // Check for null item and name
+                    itemsStringBuilder.append(item.getName()).append(", ");
+                }
+            }
+            String itemsString = itemsStringBuilder.toString().trim();
+            if (itemsString.endsWith(",")) {
+                itemsString = itemsString.substring(0, itemsString.length() - 1); // Remove trailing comma
+            }
+            holder.purchaseItemsTextView.setText(itemsString);
+        } else {
+            holder.purchaseItemsTextView.setText("Items: None");
         }
-        String itemsString = itemsStringBuilder.toString().trim();
-        if (itemsString.endsWith(",")) {
-            itemsString = itemsString.substring(0, itemsString.length() - 1); // Remove trailing comma
-        }
-        holder.purchaseItemsTextView.setText(itemsString);
 
-        // Handle item clicks for updating price
+        // Handle edit group action
+        holder.editGroupButton.setOnClickListener(v -> {
+            Context context = v.getContext();
+            Intent intent = new Intent(context, EditPurchasedRecordActivity.class);
+            intent.putExtra("GROUP_ID", groupId); // Pass groupId directly
+            intent.putExtra("PURCHASE_ID", record.getId());
+            context.startActivity(intent);
+        });
+
+        // Handle updating the price when the item view is clicked
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 showUpdatePriceDialog(v.getContext(), record);
@@ -79,11 +97,12 @@ public class PurchasedItemsAdapter extends RecyclerView.Adapter<PurchasedItemsAd
     }
 
     // ViewHolder class
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView purchaseRoommateTextView;
         private final TextView purchaseTotalPriceTextView;
         private final TextView purchaseTimestampTextView;
         private final TextView purchaseItemsTextView;
+        private final Button editGroupButton; // Added button for editing group items
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -91,12 +110,13 @@ public class PurchasedItemsAdapter extends RecyclerView.Adapter<PurchasedItemsAd
             purchaseTotalPriceTextView = itemView.findViewById(R.id.purchaseTotalPriceTextView);
             purchaseTimestampTextView = itemView.findViewById(R.id.purchaseTimestampTextView);
             purchaseItemsTextView = itemView.findViewById(R.id.purchaseItemsTextView);
+            editGroupButton = itemView.findViewById(R.id.editGroupButton); // Initialize edit button
         }
     }
 
     // Dialog to update the price of a purchase
     private void showUpdatePriceDialog(Context context, PurchasedRecord record) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
         builder.setTitle("Update Purchase Price");
 
         // Input for new price
@@ -105,9 +125,12 @@ public class PurchasedItemsAdapter extends RecyclerView.Adapter<PurchasedItemsAd
         builder.setView(input);
 
         builder.setPositiveButton("Save", (dialog, which) -> {
-            double newPrice = Double.parseDouble(input.getText().toString());
-            if (listener != null) {
-                listener.onUpdatePriceClick(record, newPrice);
+            String inputText = input.getText().toString();
+            if (!inputText.isEmpty()) {
+                double newPrice = Double.parseDouble(inputText);
+                if (listener != null) {
+                    listener.onUpdatePriceClick(record, newPrice);
+                }
             }
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());

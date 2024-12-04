@@ -86,6 +86,14 @@ public class ShoppingBasketActivity extends AppCompatActivity {
         // Handle Checkout Button Click
         Button checkoutButton = findViewById(R.id.checkoutButton);
         checkoutButton.setOnClickListener(v -> checkoutItems());
+
+        // Handle View Past Purchases Button Click
+        Button viewPastPurchasesButton = findViewById(R.id.viewPastPurchasesButton);
+        viewPastPurchasesButton.setOnClickListener(v -> {
+            Intent intent = new Intent(ShoppingBasketActivity.this, PurchasedItemsActivity.class);
+            intent.putExtra("GROUP_ID", userGroupId); // Pass the group ID
+            startActivity(intent);
+        });
     }
 
     private void loadBasketItems() {
