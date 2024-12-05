@@ -22,8 +22,14 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class handles the basket Activity.
+ * It allows the users to view, move items back to the shopping list and go to checkout.
+ */
 public class ShoppingBasketActivity extends AppCompatActivity {
 
+    // Variables
+    private static final String DEBUG_TAG = "ShoppingBasketActivity";
     private RecyclerView shoppingBasketRecyclerView;
     private ShoppingListAdapter adapter;
     private DatabaseReference basketReference;
@@ -37,7 +43,7 @@ public class ShoppingBasketActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_shopping_basket);
 
-        // Retrieve group ID from the intent
+        // Get user group id from profile when user first gets to the list
         userGroupId = getIntent().getStringExtra("GROUP_ID");
         if (userGroupId == null || userGroupId.isEmpty()) {
             Toast.makeText(this, "Error: Group ID is missing.", Toast.LENGTH_SHORT).show();
@@ -45,25 +51,44 @@ public class ShoppingBasketActivity extends AppCompatActivity {
             return;
         }
 
-        // Initialize Firebase reference for the shopping basket
+        // Create the Firebase reference for the shopping basket
         basketReference = FirebaseDatabase.getInstance().getReference("ShoppingBasket").child(userGroupId);
+
+        // Create a reference to the Firebase for shopping list
         shoppingListReference = FirebaseDatabase.getInstance().getReference("ShoppingList").child(userGroupId);
 
-        // Initialize RecyclerView and adapter
+        // Obtain object View
         shoppingBasketRecyclerView = findViewById(R.id.shoppingBasketRecyclerView);
         shoppingBasketRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Array of items in basket initialize
         basketItems = new ArrayList<>();
+
+        // Use adapter
         adapter = new ShoppingListAdapter(basketItems, new ShoppingListAdapter.OnItemClickListener() {
+
+            /**
+             * Item will not be edited in basket Activity
+             * @param item
+             */
             @Override
             public void onItemEditClick(Item item) {
-                Toast.makeText(ShoppingBasketActivity.this, "Editing basket items is not allowed.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ShoppingBasketActivity.this, "Not allowed to edit item", Toast.LENGTH_SHORT).show();
             }
 
+            /**
+             * Item will be deleted from the basket list and added back to the shopping list
+             * @param item
+             */
             @Override
             public void onItemDeleteClick(Item item) {
                 deleteItemMoveBackToList(item);
             }
 
+            /**
+             * Item can be unmarked and moved back to the shopping list
+             * @param item
+             */
             @Override
             public void updateItemInFirebase(Item item) {
                 itemPurchaseStatus(item);
@@ -71,19 +96,19 @@ public class ShoppingBasketActivity extends AppCompatActivity {
         });
         shoppingBasketRecyclerView.setAdapter(adapter);
 
-        // Load basket items
+        // Get basket list items
         loadBasketItems();
 
         // Handle Logout Button Click
         findViewById(R.id.logoutButton2).setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut(); // Sign out the user
             Intent intent = new Intent(ShoppingBasketActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear back stack
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
-            finish(); // Close current activity
+            finish();
         });
 
-        // Handle Checkout Button Click
+        // Navigate user to purchase history when Checkout Button is clicked
         Button checkoutButton = findViewById(R.id.checkoutButton);
         checkoutButton.setOnClickListener(v -> checkoutItems());
 
@@ -91,82 +116,94 @@ public class ShoppingBasketActivity extends AppCompatActivity {
         Button viewPastPurchasesButton = findViewById(R.id.viewPastPurchasesButton);
         viewPastPurchasesButton.setOnClickListener(v -> {
             Intent intent = new Intent(ShoppingBasketActivity.this, PurchasedItemsActivity.class);
-            intent.putExtra("GROUP_ID", userGroupId); // Pass the group ID
+            intent.putExtra("GROUP_ID", userGroupId);
             startActivity(intent);
         });
     }
 
+    /**
+     * Get the items from the basket from Firebase
+     */
     private void loadBasketItems() {
         basketReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                basketItems.clear(); // Clear current list
+                basketItems.clear();
                 for (DataSnapshot itemSnapshot : snapshot.getChildren()) {
                     Item item = itemSnapshot.getValue(Item.class);
                     if (item != null) {
-                        basketItems.add(item); // Add to local list
+                        basketItems.add(item);
                     }
                 }
-                adapter.notifyDataSetChanged(); // Update RecyclerView
+                adapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(ShoppingBasketActivity.this, "Failed to load basket items.", Toast.LENGTH_SHORT).show();
-                Log.e("ShoppingBasketActivity", "Error loading basket items: " + error.getMessage());
+                Log.e(DEBUG_TAG, "Error loading basket items: " + error.getMessage());
             }
         });
     }
 
+    /**
+     * Remove the item from basket list if the item is unpurchased and move it back to the shopping list
+     * @param item
+     */
     private void deleteItemMoveBackToList(Item item) {
-        // Remove the item from the basket
+        // Remove the item from the basket list
         basketReference.child(item.getItemId()).removeValue().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-
-                // Reset the item properties for moving back to the shopping list
+                // Set the values back to default
                 item.setPurchased(false);
                 item.setPurchasedBy(null);
                 item.setSelected(false);
                 item.setPrice(0.0);
 
-                // Add the item back to the shopping list
+                // Send the item back to the shopping list
                 shoppingListReference.child(item.getItemId()).setValue(item).addOnCompleteListener(addTask -> {
                     if (addTask.isSuccessful()) {
                         basketItems.remove(item);
                         adapter.notifyDataSetChanged();
                         Toast.makeText(this, "Item moved back to shopping list", Toast.LENGTH_SHORT).show();
                     } else {
-                        Log.e("ShoppingBasketActivity", "Failed to add item back to shopping list.");
+                        Log.e(DEBUG_TAG, "Failed to add item back to shopping list.");
                         Toast.makeText(this, "Failed to move item to shopping list", Toast.LENGTH_SHORT).show();
                     }
                 });
             } else {
-                Log.e("ShoppingBasketActivity", "Failed to remove item from basket.");
+                Log.e(DEBUG_TAG, "Failed to remove item from basket.");
                 Toast.makeText(this, "Failed to remove item from basket", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+    /**
+     * Updates the items purchased status if the user unmarks or marks the item
+     * @param item
+     */
     private void itemPurchaseStatus(Item item) {
         if (item.isPurchased()) {
-            // Mark as purchased: Move to basket and remove from shopping list
+            // If item is purchased, mark as purchased
+            // Then move the item to the basket list
             basketReference.child(item.getItemId()).setValue(item).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     shoppingListReference.child(item.getItemId()).removeValue().addOnCompleteListener(removeTask -> {
                         if (removeTask.isSuccessful()) {
-                            loadBasketItems(); // Refresh basket
+                            loadBasketItems();
                         }
                     });
                 }
             });
         } else {
-            // Unmark as purchased: Move back to shopping list and remove from basket
-            item.setPurchasedBy(null); // Clear the purchaser's name
+            // If item is unpurchased, unmark as purchased
+            // Then move the item back to the shopping list and remove from basket
+            item.setPurchasedBy(null);
             shoppingListReference.child(item.getItemId()).setValue(item).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     basketReference.child(item.getItemId()).removeValue().addOnCompleteListener(removeTask -> {
                         if (removeTask.isSuccessful()) {
-                            loadBasketItems(); // Refresh basket
+                            loadBasketItems();
                         }
                     });
                 }
@@ -174,6 +211,9 @@ public class ShoppingBasketActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles the checkout process
+     */
     private void checkoutItems() {
         if (basketItems.isEmpty()) {
             Toast.makeText(this, "Your basket is empty!", Toast.LENGTH_SHORT).show();
@@ -183,7 +223,7 @@ public class ShoppingBasketActivity extends AppCompatActivity {
         // Retrieve the current user's name
         String userName = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
         if (userName == null || userName.isEmpty()) {
-            userName = "Unknown User"; // Fallback if name is unavailable
+            userName = "Unknown User";
         }
 
         // Calculate total price
@@ -229,7 +269,7 @@ public class ShoppingBasketActivity extends AppCompatActivity {
 
                         // Navigate to the Purchased Items Page
                         Intent intent = new Intent(ShoppingBasketActivity.this, PurchasedItemsActivity.class);
-                        intent.putExtra("GROUP_ID", userGroupId); // Pass the group ID
+                        intent.putExtra("GROUP_ID", userGroupId);
                         startActivity(intent);
                         finish(); // Close the basket page
                     } else {
