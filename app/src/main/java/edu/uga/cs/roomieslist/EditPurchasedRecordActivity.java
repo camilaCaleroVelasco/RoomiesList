@@ -19,8 +19,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This Activity edits the purchased records, which allows users to move back items to the
+ * shopping list and save the changes in the records
+ */
 public class EditPurchasedRecordActivity extends AppCompatActivity {
 
+    // Variables
     private RecyclerView editPurchasedRecyclerView;
     private ShoppingListAdapter adapter;
     private DatabaseReference shoppingListReference;
@@ -30,27 +35,35 @@ public class EditPurchasedRecordActivity extends AppCompatActivity {
     private String userGroupId;
     private String purchaseId;
 
+    /**
+     * Initializes the Activity
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_purchased_record);
 
+        // Get Group_ID and PURCHASE_ID
         userGroupId = getIntent().getStringExtra("GROUP_ID");
         purchaseId = getIntent().getStringExtra("PURCHASE_ID");
 
+        // Initialize Firebase Database references
         purchasedItemsReference = FirebaseDatabase.getInstance()
                 .getReference("PurchasedItems")
                 .child(userGroupId)
                 .child(purchaseId);
-
         shoppingListReference = FirebaseDatabase.getInstance()
                 .getReference("ShoppingList")
                 .child(userGroupId);
 
+        // Obtain the Recycler View object
         editPurchasedRecyclerView = findViewById(R.id.editPurchasedRecyclerView);
         editPurchasedRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        // Start purchased items list
         purchasedItems = new ArrayList<>();
+        // Initialize adapter
         adapter = new ShoppingListAdapter(purchasedItems, new ShoppingListAdapter.OnItemClickListener() {
             @Override
             public void onItemEditClick(Item item) {
@@ -64,6 +77,7 @@ public class EditPurchasedRecordActivity extends AppCompatActivity {
 
             @Override
             public void updateItemInFirebase(Item item) {
+                // Move the item if item is not purchased
                 item.setPurchased(!item.isPurchased());
                 if (!item.isPurchased()) {
                     moveItemBackToShoppingList(item);
@@ -71,14 +85,20 @@ public class EditPurchasedRecordActivity extends AppCompatActivity {
             }
         });
 
+        // Attach to the adapter
         editPurchasedRecyclerView.setAdapter(adapter);
 
+        // Get purchased items
         loadPurchasedItems();
 
+        // Save changes button
         Button saveChangesButton = findViewById(R.id.saveChangesButton);
         saveChangesButton.setOnClickListener(v -> saveChanges());
     }
 
+    /**
+     * Get the current items that are market at purchased in the Firebase database
+     */
     private void loadPurchasedItems() {
         purchasedItemsReference.addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
             @Override
@@ -99,6 +119,11 @@ public class EditPurchasedRecordActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * If purchased item is unmarked, then move it back to the shopping list
+     * and remove it from the purchased list
+     * @param item
+     */
     private void moveItemBackToShoppingList(Item item) {
         item.setPurchased(false);
         shoppingListReference.child(item.getItemId()).setValue(item).addOnCompleteListener(task -> {
@@ -112,6 +137,7 @@ public class EditPurchasedRecordActivity extends AppCompatActivity {
         });
     }
 
+    // Saves the updated records and recalculate the prices
     private void saveChanges() {
         purchasedRecord.setItems(new ArrayList<>(purchasedItems));
         double newTotalPrice = 0.0;
