@@ -14,12 +14,20 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+/**
+ * This is the main Activity. The splash screen when the user first opens the app
+ */
 public class MainActivity extends AppCompatActivity {
 
+    // Variables for Views
     private Button loginButton;
-    private TextView signUpLink;    private Button goToLoginButton;
+    private TextView signUpLink;
 
 
+    /**
+     * Called when the activity is created.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Obtain object Views
         loginButton = findViewById(R.id.loginButton);
         signUpLink = findViewById(R.id.signUpLink);
 

@@ -22,8 +22,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+/**
+ * This class handles the login process of a user
+ */
 public class LoginActivity extends AppCompatActivity {
 
+    // Variables
     private EditText emailEditText, passwordEditText;
     private Button loginButton;
     private TextView signUpLink;
@@ -37,47 +41,58 @@ public class LoginActivity extends AppCompatActivity {
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
 
-        // Initialize views
+        // Obtain object views
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         loginButton = findViewById(R.id.loginButton);
         signUpLink = findViewById(R.id.signUpLink);
 
-        // If button clicked go to loginUser
+        // If login button clicked, then go into the account
         loginButton.setOnClickListener(v -> loginUser());
-        // Navigate to Sign-Up page
+
+        // If no account then go to SignupActivity to create an account
         signUpLink.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, SignupActivity.class));
         });
     }
 
-    // Handle user login
+    /**
+     * Handles the user login.
+     * Makes sures that user information is authenticated
+     */
     private void loginUser() {
-        String email = emailEditText.getText().toString().trim(); // can delete the trim()
-        String password = passwordEditText.getText().toString().trim();
+        // Get email and password
+        String email = emailEditText.getText().toString();
+        String password = passwordEditText.getText().toString();
 
+        // Make sure that the email and password were entered
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please you must enter email and password", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Authenticate user using Firebase
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        // Login success
+                        // If login is successful, then go to shopping list
                         navigateToShoppingList();
                     } else {
-                        // Login failed
-                        Toast.makeText(LoginActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                        // If login failed, then try again.
+                        Toast.makeText(LoginActivity.this, "Authentication failed. Try again!", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    // Once user has logged in, take them to the shopping list activity
+    /**
+     * If the user is authenticated then take them to the shopping list activity
+     */
     private void navigateToShoppingList() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
+        // Make sure that the user was logged in
         if (currentUser != null) {
+            // Get the users id
             String userId = currentUser.getUid();
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
 
@@ -87,15 +102,17 @@ public class LoginActivity extends AppCompatActivity {
                     if (snapshot.exists()) {
                         String groupId = snapshot.getValue(String.class);
                         if (groupId != null) {
+                            // If the group id was found, then take the user to the shopping list
                             Intent intent = new Intent(LoginActivity.this, ShoppingListActivity.class);
                             intent.putExtra("GROUP_ID", groupId);
                             startActivity(intent);
                             finish();
                         } else {
-                            Toast.makeText(LoginActivity.this, "Group ID not found.", Toast.LENGTH_SHORT).show();
+                            // If groupId is null
+                            Toast.makeText(LoginActivity.this, "Group ID was not found.", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(LoginActivity.this, "Group ID not available for this user.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, "Group ID does not exist for this user.", Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -105,7 +122,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
         } else {
-            Toast.makeText(this, "User not logged in.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "User is not logged in.", Toast.LENGTH_SHORT).show();
         }
     }
 }
