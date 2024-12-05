@@ -11,9 +11,6 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -24,8 +21,12 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+/**
+ * This class handles when a user wants to create an account
+ */
 public class SignupActivity extends AppCompatActivity {
 
+    // Variables
     private static final String DEBUG_TAG = "SignupActivity";
     private EditText nameEditText, emailEditText, passwordEditText, groupIdEditText;
     private Button signUpButton;
@@ -33,15 +34,21 @@ public class SignupActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
 
+    /**
+     * It is initialize when the Activity is first created
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_signup);
 
+        // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("Users");
 
+        // Obtain object Views
         nameEditText = findViewById(R.id.nameEditText);
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
@@ -58,18 +65,22 @@ public class SignupActivity extends AppCompatActivity {
         });
     }
 
-    // Handle user registration
+    /**
+     * Handle registration
+     */
     private void registerUser() {
-        String name = nameEditText.getText().toString().trim();
-        String email = emailEditText.getText().toString().trim();
-        String password = passwordEditText.getText().toString().trim();
-        String groupId = groupIdEditText.getText().toString().trim();
+        String name = nameEditText.getText().toString();
+        String email = emailEditText.getText().toString();
+        String password = passwordEditText.getText().toString();
+        String groupId = groupIdEditText.getText().toString();
 
+        // Check if all fields are filled
         if (name.isEmpty() || email.isEmpty() || password.isEmpty() || groupId.isEmpty()) {
             Toast.makeText(this, "All fields need to be filled", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Checks if the password is less than 6 characters
         if (password.length() < 6) {
             Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
             return;
