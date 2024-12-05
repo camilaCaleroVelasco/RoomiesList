@@ -1,5 +1,8 @@
 package edu.uga.cs.roomieslist;
 
+/**
+ * POJO class
+ */
 public class User {
     public String name;
     public String email;

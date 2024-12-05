@@ -2,8 +2,11 @@ package edu.uga.cs.roomieslist;
 
 import java.util.List;
 
+/**
+ * POJO class
+ */
 public class PurchasedRecord {
-    private String id; // Add this field
+    private String id;
     private String purchasedBy;
     private List<Item> items;
     private double totalPrice;
@@ -18,20 +21,17 @@ public class PurchasedRecord {
         this.timestamp = timestamp;
     }
 
-    // Getter and Setter for id
+    // Getters and Setters
     public String getId() {
         return id;
     }
-
     public void setId(String id) {
         this.id = id;
     }
 
-    // Existing getters and setters
     public String getPurchasedBy() {
         return purchasedBy;
     }
-
     public void setPurchasedBy(String purchasedBy) {
         this.purchasedBy = purchasedBy;
     }
@@ -39,7 +39,6 @@ public class PurchasedRecord {
     public List<Item> getItems() {
         return items;
     }
-
     public void setItems(List<Item> items) {
         this.items = items;
     }
@@ -47,7 +46,6 @@ public class PurchasedRecord {
     public double getTotalPrice() {
         return totalPrice;
     }
-
     public void setTotalPrice(double totalPrice) {
         this.totalPrice = totalPrice;
     }
@@ -55,7 +53,6 @@ public class PurchasedRecord {
     public long getTimestamp() {
         return timestamp;
     }
-
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }

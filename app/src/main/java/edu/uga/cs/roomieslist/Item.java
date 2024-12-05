@@ -1,5 +1,8 @@
 package edu.uga.cs.roomieslist;
 
+/**
+ * POJO class
+ */
 public class Item {
     public String itemId;
     public String name;
@@ -28,6 +31,7 @@ public class Item {
 
     }
 
+    // Getters and Setters
     public String getName() {
         return name;
     }
