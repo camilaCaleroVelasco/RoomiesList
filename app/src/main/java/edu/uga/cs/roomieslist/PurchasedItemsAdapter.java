@@ -17,11 +17,15 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Adapter for displaying the purchased records
+ */
 public class PurchasedItemsAdapter extends RecyclerView.Adapter<PurchasedItemsAdapter.ViewHolder> {
 
+    // Variables
     private final List<PurchasedRecord> purchasedRecords;
     private final OnItemClickListener listener;
-    private final String groupId; // Pass groupId directly to the adapter
+    private final String groupId;
 
     // Interface for click actions
     public interface OnItemClickListener {
@@ -39,7 +43,7 @@ public class PurchasedItemsAdapter extends RecyclerView.Adapter<PurchasedItemsAd
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_purchased_record, parent, false); // Ensure correct layout reference
+                .inflate(R.layout.item_purchased_record, parent, false);
         return new ViewHolder(view);
     }
 
@@ -47,7 +51,7 @@ public class PurchasedItemsAdapter extends RecyclerView.Adapter<PurchasedItemsAd
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         PurchasedRecord record = purchasedRecords.get(position);
 
-        // Bind data to views
+        // Bind data to views and total price
         String purchaserName = record.getPurchasedBy() != null ? record.getPurchasedBy() : "Unknown User";
         holder.purchaseRoommateTextView.setText("Purchased by: " + purchaserName);
         holder.purchaseTotalPriceTextView.setText(String.format(Locale.US, "Total Price: $%.2f", record.getTotalPrice()));
@@ -91,30 +95,41 @@ public class PurchasedItemsAdapter extends RecyclerView.Adapter<PurchasedItemsAd
         });
     }
 
+    /**
+     * Get item count
+     * @return size of the purchased records
+     */
     @Override
     public int getItemCount() {
         return purchasedRecords.size();
     }
 
-    // ViewHolder class
+    /**
+     * Manage individual views
+     */
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView purchaseRoommateTextView;
         private final TextView purchaseTotalPriceTextView;
         private final TextView purchaseTimestampTextView;
         private final TextView purchaseItemsTextView;
-        private final Button editGroupButton; // Added button for editing group items
+        private final Button editGroupButton;
 
+        // Constructor
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             purchaseRoommateTextView = itemView.findViewById(R.id.purchaseRoommateTextView);
             purchaseTotalPriceTextView = itemView.findViewById(R.id.purchaseTotalPriceTextView);
             purchaseTimestampTextView = itemView.findViewById(R.id.purchaseTimestampTextView);
             purchaseItemsTextView = itemView.findViewById(R.id.purchaseItemsTextView);
-            editGroupButton = itemView.findViewById(R.id.editGroupButton); // Initialize edit button
+            editGroupButton = itemView.findViewById(R.id.editGroupButton);
         }
     }
 
-    // Dialog to update the price of a purchase
+    /**
+     * Update dialog is displayed to allow user to edit the price on the total purchased items
+     * @param context
+     * @param record
+     */
     private void showUpdatePriceDialog(Context context, PurchasedRecord record) {
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
         builder.setTitle("Update Purchase Price");

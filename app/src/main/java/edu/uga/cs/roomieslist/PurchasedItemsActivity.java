@@ -24,8 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class allows the user to edit the total price, view the purchased records, and settle the cost
+ * Displays the purchased items and removes any unmarked items.
+ */
 public class PurchasedItemsActivity extends AppCompatActivity {
 
+    // Variables
+    private static final String DEBUG_TAG = "PurchasedItemsActivity";
     private RecyclerView purchasedItemsRecyclerView;
     private PurchasedItemsAdapter adapter;
     private DatabaseReference purchasedItemsReference;
@@ -33,6 +39,10 @@ public class PurchasedItemsActivity extends AppCompatActivity {
     private List<PurchasedRecord> purchasedRecords;
     private String userGroupId;
 
+    /**
+     * Calle when the Activity is created
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +65,7 @@ public class PurchasedItemsActivity extends AppCompatActivity {
         });
         purchasedItemsRecyclerView.setAdapter(adapter);
 
-        // Load purchased items
+        // Get purchased items
         loadPurchasedItems();
 
         // Settle Costs button
@@ -66,21 +76,26 @@ public class PurchasedItemsActivity extends AppCompatActivity {
         Button backToShoppingListButton = findViewById(R.id.backToShoppingListButton);
         backToShoppingListButton.setOnClickListener(v -> {
             Intent intent = new Intent(PurchasedItemsActivity.this, ShoppingListActivity.class);
-            intent.putExtra("GROUP_ID", userGroupId); // Pass group ID to Shopping List
+            intent.putExtra("GROUP_ID", userGroupId);
             startActivity(intent);
-            finish(); // Close current activity
+            // Close current activity
+            finish();
         });
 
         // Handle Logout Button Click
         findViewById(R.id.logoutButton3).setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut(); // Sign out the user
             Intent intent = new Intent(PurchasedItemsActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear back stack
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
-            finish(); // Close current activity
+            finish();
         });
     }
 
+    /**
+     * Gets the purchased items from the Firebase Database.
+     * Updates the RecyclerView
+     */
     private void loadPurchasedItems() {
         purchasedItemsReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -99,11 +114,16 @@ public class PurchasedItemsActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(PurchasedItemsActivity.this, "Failed to load purchased items.", Toast.LENGTH_SHORT).show();
-                Log.e("PurchasedItemsActivity", "Error: " + error.getMessage());
+                Log.e(DEBUG_TAG, "Error: " + error.getMessage());
             }
         });
     }
 
+    /**
+     * Update the total price of the purchased items
+     * @param record
+     * @param newPrice
+     */
     private void updatePurchasePrice(PurchasedRecord record, double newPrice) {
         purchasedItemsReference.child(record.getId()).child("totalPrice").setValue(newPrice).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -116,6 +136,9 @@ public class PurchasedItemsActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Calculates how much each roommate need to pay
+     */
     private void settleCosts() {
         if (purchasedRecords.isEmpty()) {
             Toast.makeText(this, "No purchases to settle!", Toast.LENGTH_SHORT).show();
@@ -170,6 +193,9 @@ public class PurchasedItemsActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Clear all purchased records once the cost has been settled
+     */
     private void clearPurchasedItems() {
         purchasedItemsReference.removeValue().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
