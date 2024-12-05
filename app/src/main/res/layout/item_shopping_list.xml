@@ -21,14 +21,6 @@
         android:padding="8dp"
         android:text="Amount: 1" />
 
-    <!--    <TextView-->
-    <!--        android:id="@+id/addedByTextView"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:layout_marginEnd="8dp"-->
-    <!--        android:text="Added by: [User]"-->
-    <!--        android:textSize="12sp" />-->
-
     <TextView
         android:id="@+id/purchaseStatusTextView"
         android:layout_width="wrap_content"

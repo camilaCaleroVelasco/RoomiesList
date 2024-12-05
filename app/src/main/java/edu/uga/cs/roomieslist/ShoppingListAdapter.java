@@ -11,16 +11,27 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+/**
+ * This is an adapter for the ShoppingListActivity.
+ * Binds the data from the shopping list to the Views and enables users to edit, delete, and
+ * update the items.
+ */
 public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapter.ViewHolder> {
 
+    // Variables
     private List<Item> shoppingList;
     private OnItemClickListener listener;
 
-    // Constructor
+    /**
+     * Constructor
+     * @param shoppingList
+     * @param listener
+     */
     public ShoppingListAdapter(List<Item> shoppingList, OnItemClickListener listener){
         this.shoppingList = shoppingList;
         this.listener = listener;
     }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -28,22 +39,33 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
         return new ViewHolder(view);
     }
 
+    /**
+     * Bind the data
+     * @param holder The ViewHolder which should be updated to represent the contents of the
+     *        item at the given position in the data set.
+     * @param position The position of the item within the adapter's data set.
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Item item = shoppingList.get(position);
         holder.bind(item);
     }
 
+    /**
+     * Gets the total number of items at the shopping list
+     * @return
+     */
     @Override
     public int getItemCount() {
         return shoppingList.size();
     }
 
-    // ViewHolder class for managing each item view
+    /**
+     * Manages each individual item View
+     */
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView itemNameTextView;
         private CheckBox selectedCheckBox;
-        TextView addedByTextView;
         TextView purchaseStatusTextView;
         private TextView itemAmountTextView;
 
@@ -51,36 +73,34 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
             super(itemView);
             itemNameTextView = itemView.findViewById(R.id.itemNameTextView);
             selectedCheckBox = itemView.findViewById(R.id.selectedCheckBox);
-//            addedByTextView = itemView.findViewById(R.id.addedByTextView);
             purchaseStatusTextView = itemView.findViewById(R.id.purchaseStatusTextView);
             itemAmountTextView = itemView.findViewById(R.id.itemAmountTextView);
 
-            // Handle when checkbox is checked or unchecked
+            // Handles when checkbox is checked or unchecked
             selectedCheckBox.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     Item item = shoppingList.get(position);
 
-                    // Toggle purchased status
+                    // If the checkbox is checked then the item is purchased
                     item.setPurchased(selectedCheckBox.isChecked());
 
                     if (selectedCheckBox.isChecked()) {
-                        // When checking the item, prompt to mark it as purchased
                         listener.updateItemInFirebase(item);
                     } else {
-                        // When unchecking, immediately mark it as unpurchased
+                        // If item is unchecked then set the item as unpurchased
                         item.setPurchased(false);
                         item.setPrice(0.0);
                         item.setPurchasedBy(null);
                         item.setSelected(false);
-                        listener.updateItemInFirebase(item); // Directly update Firebase without dialog
+                        listener.updateItemInFirebase(item);
                     }
 
                 }
                 notifyDataSetChanged();
             });
 
-            // Edit item when clicked
+            // If item is clicked then it can be edited
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
@@ -88,7 +108,7 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
                 }
             });
 
-            // Delete item when long-clicked
+            // If long-click, then item will be deleted
             itemView.setOnLongClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
@@ -99,21 +119,26 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
 
         }
 
+        /**
+         * Binds the items of each View
+         * @param item
+         */
         public void bind(Item item) {
-            itemNameTextView.setText(item.getName()); // Bind the item name
-            selectedCheckBox.setChecked(item.isSelected()); // Bind selection state
+            itemNameTextView.setText(item.getName());
+            selectedCheckBox.setChecked(item.isSelected());
             if (item.isPurchased()){
                 purchaseStatusTextView.setText("Purchased");
             } else {
                 purchaseStatusTextView.setText("Not Purchased");
             }
             String addedBy = item.getAddedBy() != null ? item.getAddedBy() : "Unknown User";
-//            addedByTextView.setText("Added by: " + addedBy);
             itemAmountTextView.setText("Amount: " + item.getAmount());
         }
     }
 
-    // Interface for item click actions
+    /**
+     * Handles the items clicked
+     */
     public interface OnItemClickListener {
         void onItemEditClick(Item item);
         void onItemDeleteClick(Item item);

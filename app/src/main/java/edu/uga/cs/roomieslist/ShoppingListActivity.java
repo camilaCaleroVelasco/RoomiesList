@@ -26,8 +26,14 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class handles the shopping list.
+ * The user is able to view, add, delete, mark as purchased, and edit an item.
+ */
 public class ShoppingListActivity extends AppCompatActivity {
 
+    // Variables
+    private static final String DEBUG_TAG = "ShoppingListActivity";
     private RecyclerView shoppingListRecyclerView;
     private ShoppingListAdapter adapter;
     private DatabaseReference databaseReference;
@@ -37,36 +43,51 @@ public class ShoppingListActivity extends AppCompatActivity {
     private DatabaseReference basketReference;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_shopping_list);
 
-        // Assume `userGroupId` is retrieved from the user's profile upon login or signup
+        // Get user group id from profile when user first gets to the list
         userGroupId = getIntent().getStringExtra("GROUP_ID");
 
-        // Reference to this group's shopping list in Firebase
+        // Create a reference to the Firebase for shopping list
         databaseReference = FirebaseDatabase.getInstance().getReference("ShoppingList").child(userGroupId);
 
-        // Initialize the Firebase reference for the shopping basket
+        // Create the Firebase reference for the shopping basket
         basketReference = FirebaseDatabase.getInstance().getReference("ShoppingBasket").child(userGroupId);
-        // Initialize UI elements
+
+        // Obtain object View
         shoppingListRecyclerView = findViewById(R.id.shoppingListRecyclerView);
         shoppingListRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         shoppingList = new ArrayList<>();
+
+        // Use adapter
         adapter = new ShoppingListAdapter(shoppingList, new ShoppingListAdapter.OnItemClickListener() {
+
+            /**
+             * Handles when the item clicked on to edit it
+             * @param item
+             */
             @Override
             public void onItemEditClick(Item item) {
                 showEditItemDialog(item);
             }
 
+            /**
+             * Handles when the item is deleted on long-click.
+             * @param item
+             */
             @Override
             public void onItemDeleteClick(Item item) {
                 deleteItem(item);
             }
 
+            /**
+             * Handles when the items are edited and updated in the Firebase
+             * @param item
+             */
             @Override
             public void updateItemInFirebase(Item item) {
                 showMarkPurchasedDialog(item);
@@ -74,17 +95,18 @@ public class ShoppingListActivity extends AppCompatActivity {
         });
         shoppingListRecyclerView.setAdapter(adapter);
 
-        // Load shopping list for this group
+        // Get shopping list items
         loadShoppingList();
 
-        // Fetch the user's name when activity created
+        // Get user's name from the Firebase
         getNameFromFirebase();
 
         // Button for adding new items
         findViewById(R.id.addItemButton).setOnClickListener(v -> showAddItemDialog());
 
+        // Navigate to shopping basket if button clicked
         findViewById(R.id.markPurchasedButton).setOnClickListener(v -> {
-            markItemsAsPurchased(() -> { // Callback after marking items
+            markItemsAsPurchased(() -> {
                 Intent intent = new Intent(ShoppingListActivity.this, ShoppingBasketActivity.class);
                 intent.putExtra("GROUP_ID", userGroupId);
                 startActivity(intent);
@@ -92,17 +114,19 @@ public class ShoppingListActivity extends AppCompatActivity {
         });
 
 
-
         // Handle Logout Button Click
         findViewById(R.id.logoutButton).setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut(); // Sign out the user
+            FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(ShoppingListActivity.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear back stack
             startActivity(intent);
-            finish(); // Close current activity
+            finish();
         });
     }
 
+    /**
+     * Get the items from the shopping list
+     */
     private void loadShoppingList() {
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -125,11 +149,15 @@ public class ShoppingListActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles when the user wants to add a new item.
+     * It shows the user a dialog to input name and amount of items
+     */
     private void showAddItemDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Add New Item");
 
-        // We need to create a layout in order to hold multiple input fields
+        // Layout input fields
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
 
@@ -142,9 +170,9 @@ public class ShoppingListActivity extends AppCompatActivity {
         amountInput.setInputType(InputType.TYPE_CLASS_NUMBER);
         layout.addView(amountInput);
 
-        // Then we see the layout as the view for the dialog
         builder.setView(layout);
 
+        // When add is clicked create a new item
         builder.setPositiveButton("Add", (dialog, which) -> {
             String itemName = input.getText().toString();
             String amountText = amountInput.getText().toString();
@@ -168,11 +196,16 @@ public class ShoppingListActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * If the user wants to edit the item, the user will just click on the item and
+     * change the item name and/or item amount
+     * @param item
+     */
     private void showEditItemDialog(Item item) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Edit Item");
 
-        // Create a vertical layout to hold both input fields
+        // Layout input fields
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
 
@@ -189,6 +222,7 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         builder.setView(layout);
 
+        // When save is clicked the item is updated in the Firebase
         builder.setPositiveButton("Save", (dialog, which) -> {
             String newName = nameInput.getText().toString();
             String newAmountStr = amountInput.getText().toString();
@@ -217,10 +251,14 @@ public class ShoppingListActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * If the item is unmark, then allow the user to do and set the item as unpurchased
+     * @param item
+     */
     private void showMarkPurchasedDialog(Item item) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        // Determine if marking or unmarking
+        // If item is unmarked
         if (!item.isPurchased()) {
             builder.setTitle("Unmark as Purchased");
             builder.setMessage("Do you want to mark this item as unpurchased?");
@@ -256,66 +294,78 @@ public class ShoppingListActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * If user wants to mark item as purchased then change the state of the item to purchased in the
+     * Firebase.
+     * @param onComplete
+     */
     private void markItemsAsPurchased(Runnable onComplete) {
         List<Item> itemsToUpdate = new ArrayList<>();
 
-        // Collect items to move
+        // Get items that are marked as purchased to send them to the basket
         for (Item item : shoppingList) {
-            if (item.isSelected()) {  // Assuming you have an isSelected flag in the adapter
+            if (item.isSelected()) {
                 item.setPurchased(true);
                 item.setPurchasedBy(FirebaseAuth.getInstance().getCurrentUser() != null ? FirebaseAuth.getInstance().getCurrentUser().getDisplayName() : "Unknown User");
-                itemsToUpdate.add(item); // Collect items to update
+                itemsToUpdate.add(item);
 
             }
         }
 
-        // Process each item
+        // Loop over the items that have been marked as purchased
         for (Item item : itemsToUpdate) {
             String itemId = item.getItemId();
 
-            // Add the item to the ShoppingBasket in Firebase
+            // Add the item to the basket in the Firebase
             basketReference.child(itemId).setValue(item).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    Log.d("ShoppingListActivity", "Item added to basket: " + item.getName());
+                    Log.d(DEBUG_TAG, "Item added to basket: " + item.getName());
 
-                    // Remove the item from the ShoppingList in Firebase after adding to basket
+                    // Remove the item from the shopping list once it is added to the basket
                     databaseReference.child(itemId).removeValue().addOnCompleteListener(removeTask -> {
                         if (removeTask.isSuccessful()) {
-                            Log.d("ShoppingListActivity", "Item removed from shopping list: " + item.getName());
-                            shoppingList.remove(item); // Update the local list
+                            Log.d(DEBUG_TAG, "Item removed from shopping list: " + item.getName());
+                            shoppingList.remove(item);
                             adapter.notifyDataSetChanged();
 
                         } else {
-                            Log.e("ShoppingListActivity", "Failed to remove item from shopping list.");
+                            Log.e(DEBUG_TAG, "Failed to remove item from shopping list.");
                         }
                     });
                 } else {
-                    Log.e("ShoppingListActivity", "Failed to add item to basket.");
+                    Log.e(DEBUG_TAG, "Failed to add item to basket.");
                 }
             });
         }
 
-        // Call callback if provided
         if (onComplete != null) {
             onComplete.run();
         }
 
         adapter.notifyDataSetChanged();
     }
+
+    /**
+     * Handles when an item is from the list by the user by doing long-click.
+     * The item is removed from the Firebase.
+     * @param item
+     */
     private void deleteItem(Item item) {
-        // Remove item from Firebase and update the list
         databaseReference.child(item.getItemId()).removeValue().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 shoppingList.remove(item);
                 adapter.notifyDataSetChanged();
-                Toast.makeText(ShoppingListActivity.this, "Item deleted at: ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ShoppingListActivity.this, "Item deleted", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(ShoppingListActivity.this, "Failed to delete item", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-
+    /**
+     * Handles the updates of the Firebase
+     * @param item
+     */
     public void updateItemInFirebase(Item item) {
         databaseReference.child(item.getItemId()).setValue(item)
                 .addOnCompleteListener(task -> {
@@ -329,14 +379,18 @@ public class ShoppingListActivity extends AppCompatActivity {
     }
 
 
-    // Get user name from database
+    /**
+     * Get users name from the Firebase database
+     */
     public void getNameFromFirebase(){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        // Ensure that the user is not null
         if (user != null) {
             String userId = user.getUid();
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
 
-            // Fetch the user's name only once
+            // Get the user's name
             userRef.child("name").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -356,7 +410,7 @@ public class ShoppingListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadShoppingList(); // Reload shopping list
+        loadShoppingList();
     }
 
 }
